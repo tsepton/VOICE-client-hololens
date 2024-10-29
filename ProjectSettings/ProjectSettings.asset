@@ -683,11 +683,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: vass
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: 
+  metroCertificatePath: Assets/WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: 
-  metroCertificateIssuer: 
-  metroCertificateNotAfter: 0000000000000000
+  metroCertificateSubject: DefaultCompany
+  metroCertificateIssuer: DefaultCompany
+  metroCertificateNotAfter: 00c3f04a0c49dc01
   metroApplicationDescription: vass
   wsaImages: {}
   metroTileShortName: vass
