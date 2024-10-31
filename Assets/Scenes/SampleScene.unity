@@ -176,7 +176,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7585035320575375756, guid: ad5b753b73e311143a85055b15cea562, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -235,11 +235,104 @@ PrefabInstance:
       propertyPath: m_Name
       value: MRTK XR Rig
       objectReference: {fileID: 0}
+    - target: {fileID: 7720573869748407015, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}
+      propertyPath: m_InteractionManager
+      value: 
+      objectReference: {fileID: 1762981647}
+    - target: {fileID: 8479077998186684813, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}
+--- !u!1 &1244179877
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1244179879}
+  - component: {fileID: 1244179878}
+  - component: {fileID: 1244179880}
+  m_Layer: 0
+  m_Name: Voice Assistant
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1244179878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244179877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66d9d3e1bc0f16c4c835bd06b372b2c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1244179879
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244179877}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.051965643, y: 1.6694523, z: 0.34261173}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1244179880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244179877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 609805e47c97dc3409a4ede55ced598b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  phraseActions:
+  - phrase: Hey glasses
+    action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1244179878}
+          m_TargetAssemblyTypeName: Screenshot, Assembly-CSharp
+          m_MethodName: TakePhoto
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &1762981647 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 800708247703322884, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}
+  m_PrefabInstance: {fileID: 866239990}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1969623960
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,3 +434,4 @@ SceneRoots:
   - {fileID: 1969623962}
   - {fileID: 866239990}
   - {fileID: 330507173}
+  - {fileID: 1244179879}
