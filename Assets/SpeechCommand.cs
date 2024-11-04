@@ -4,14 +4,14 @@ using MixedReality.Toolkit;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class SpeechInput : MonoBehaviour
+public class SpeechCommand : MonoBehaviour
 {
-  [SerializeField] private List<PhraseAction> phraseActions;
+  [SerializeField] private List<PhraseAction> _phraseActions;
 
   private void Start()
   {
     var phraseRecognitionSubsystem = XRSubsystemHelpers.KeywordRecognitionSubsystem;
-    foreach (var phraseAction in phraseActions)
+    foreach (var phraseAction in _phraseActions)
     {
       if (!string.IsNullOrEmpty(phraseAction.Phrase) &&
         phraseAction.Action.GetPersistentEventCount() > 0)
@@ -26,13 +26,13 @@ public class SpeechInput : MonoBehaviour
   [Serializable]
   public struct PhraseAction
   {
-    [SerializeField] private string phrase;
+    [SerializeField] private string _phrase;
 
-    [SerializeField] private UnityEvent action;
+    [SerializeField] private UnityEvent _action;
 
-    public string Phrase => phrase;
+    public string Phrase => _phrase;
 
-    public UnityEvent Action => action;
+    public UnityEvent Action => _action;
   }
 }
 

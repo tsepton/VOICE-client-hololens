@@ -259,6 +259,7 @@ GameObject:
   - component: {fileID: 1244179879}
   - component: {fileID: 1244179878}
   - component: {fileID: 1244179880}
+  - component: {fileID: 1244179881}
   m_Layer: 0
   m_Name: Voice Assistant
   m_TagString: Untagged
@@ -310,9 +311,9 @@ MonoBehaviour:
     action:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1244179878}
-          m_TargetAssemblyTypeName: Screenshot, Assembly-CSharp
-          m_MethodName: TakePhoto
+        - m_Target: {fileID: 1244179881}
+          m_TargetAssemblyTypeName: SpeechToText, Assembly-CSharp
+          m_MethodName: StartListening
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -322,6 +323,18 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &1244179881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244179877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e22397cfc54b1c4fb6a6b9ca9160633, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1762981647 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 800708247703322884, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}

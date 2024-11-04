@@ -5,47 +5,46 @@ using UnityEngine.Windows.WebCam;
 
 public class Screenshot : MonoBehaviour
 {
-    PhotoCapture photoCaptureObject = null;
+    private static ILogger _logger = Debug.unityLogger;
+    private static readonly string _tag = "Screenshot.cs";
 
-    Resolution cameraResolution;
+    private PhotoCapture _photoCaptureObject = null;
 
-    void Start()
+    private Resolution _cameraResolution;
+
+    private void Start()
     {
-        cameraResolution = PhotoCapture.SupportedResolutions.OrderByDescending((res) => res.width * res.height).First();
+        _cameraResolution = PhotoCapture.SupportedResolutions.OrderByDescending((res) => res.width * res.height).First();
 
         PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject)
         {
-            photoCaptureObject = captureObject;
-            Debug.Log("Photo capture initiliazed.");
+            _photoCaptureObject = captureObject;
+            _logger.Log(_tag, "Photo capture initiliazed.");
         });
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         OnStoppedPhotoMode();
     }
 
     public void TakePhoto()
     {
-        Debug.Log("Taking a photo.");
-        Debug.Log(cameraResolution);
-        Debug.Log(photoCaptureObject);
-
-        if (photoCaptureObject == null) return;
+        if (_photoCaptureObject == null) return;
         CameraParameters c = new CameraParameters();
         c.hologramOpacity = 0.0f;
-        c.cameraResolutionWidth = cameraResolution.width;
-        c.cameraResolutionHeight = cameraResolution.height;
+        c.cameraResolutionWidth = _cameraResolution.width;
+        c.cameraResolutionHeight = _cameraResolution.height;
         c.pixelFormat = CapturePixelFormat.BGRA32;
 
-        photoCaptureObject.StartPhotoModeAsync(c, OnPhotoModeStarted);
+        _photoCaptureObject.StartPhotoModeAsync(c, OnPhotoModeStarted);
     }
 
     private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result)
     {
         if (!result.success)
         {
-            Debug.LogError("Unable to start photo mode");
+            _logger.LogError(_tag, "Unable to start photo mode");
             return;
         }
 
@@ -53,17 +52,17 @@ public class Screenshot : MonoBehaviour
         string filename = string.Format(@"CapturedImage{0}_n.jpg", Time.time);
         string filePath = System.IO.Path.Combine(Application.persistentDataPath, filename);
 
-        photoCaptureObject.TakePhotoAsync(filePath, PhotoCaptureFileOutputFormat.JPG, delegate (PhotoCapture.PhotoCaptureResult result)
+        _photoCaptureObject.TakePhotoAsync(filePath, PhotoCaptureFileOutputFormat.JPG, delegate (PhotoCapture.PhotoCaptureResult result)
         {
-            if (result.success) Debug.Log("Saved Photo to disk");
-            else Debug.Log("Failed to save Photo to disk");
+            if (result.success) _logger.Log(_tag, "Saved Photo to disk");
+            else _logger.Log(_tag, "Failed to save Photo to disk");
         });
     }
 
-    void OnStoppedPhotoMode()
+    private void OnStoppedPhotoMode()
     {
-        if (photoCaptureObject == null) return;
-        photoCaptureObject.Dispose();
-        photoCaptureObject = null;
+        if (_photoCaptureObject == null) return;
+        _photoCaptureObject.Dispose();
+        _photoCaptureObject = null;
     }
 }
