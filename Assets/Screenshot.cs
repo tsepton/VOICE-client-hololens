@@ -62,6 +62,7 @@ public class Screenshot : MonoBehaviour
 
     void OnStoppedPhotoMode()
     {
+        if (photoCaptureObject == null) return;
         photoCaptureObject.Dispose();
         photoCaptureObject = null;
     }
