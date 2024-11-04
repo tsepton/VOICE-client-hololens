@@ -6,23 +6,25 @@ using UnityEngine.UI;
 
 public class AssistantUI : MonoBehaviour {
 
-	[SerializeField] public Speech speech;
+	[SerializeField] private Speech speech;
 
-	[SerializeField] public Gaze gaze;
+	[SerializeField] private Gaze gaze;
 
 	// FIXME - There should be only one AudioSource but multiple mp3
 	// TODO loading sound while querying the server
-	[SerializeField] public AudioSource activationSound;
+	[SerializeField] private AudioSource activationSound;
 	
-	[SerializeField] public AudioSource deactivationSound;
+	[SerializeField] private AudioSource deactivationSound;
 	
-	[SerializeField] public GameObject userHeadInterface;
+	[SerializeField] private GameObject userHeadInterface;
+	
+	[SerializeField] private RawImage _loadingIcon;
+	
+	[SerializeField] private RawImage _listeningIcon;
+	
+	[SerializeField] private TextMeshProUGUI _utterance;
 
 	private FileLogger _vassCustomFileLogger;
-	
-	private RawImage _loadingIcon;
-	
-	private TextMeshProUGUI _utterance;
 
 	void Start() {
 		_vassCustomFileLogger = new FileLogger();
@@ -30,18 +32,17 @@ public class AssistantUI : MonoBehaviour {
 		speech.OnDictationStart += OnDictationStart;
 		speech.OnDictationEnd += (string utterance) => OnDictationEnd(utterance);
 		
-		_loadingIcon = userHeadInterface.GetComponentInChildren<RawImage>();
 		_loadingIcon.enabled = false;
-		_utterance = userHeadInterface.GetComponentInChildren<TextMeshProUGUI>();
+		_listeningIcon.enabled = false;
 	}
 
 	void OnDictationStart() {
-		_loadingIcon.enabled = true;
+		_listeningIcon.enabled = true;
 		activationSound.Play();
 	}
 	
 	void OnDictationEnd(string str) {
-		_loadingIcon.enabled = false;
+		_listeningIcon.enabled = false;
 		_utterance.text = str;
 		deactivationSound.Play();
 	}
