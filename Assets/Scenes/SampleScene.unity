@@ -306,9 +306,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 609805e47c97dc3409a4ede55ced598b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  phraseActions:
-  - phrase: Hey glasses
-    action:
+  _phraseActions:
+  - _phrase: Hey glasses
+    _action:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 1244179881}
