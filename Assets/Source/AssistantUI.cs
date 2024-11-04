@@ -10,12 +10,12 @@ public class AssistantUI : MonoBehaviour {
 
 	[SerializeField] public Gaze gaze;
 
+	// FIXME - There should be only one AudioSource but multiple mp3
+	// TODO loading sound while querying the server
 	[SerializeField] public AudioSource activationSound;
 	
 	[SerializeField] public AudioSource deactivationSound;
 	
-	// TODO loading sound while querying the server
-
 	[SerializeField] public GameObject userHeadInterface;
 
 	private FileLogger _vassCustomFileLogger;
