@@ -12,7 +12,7 @@ public class Gaze : MonoBehaviour {
 	private PhotoCapture _photoCaptureObject = null;
 
 	private Resolution _cameraResolution;
-	
+
 	private String _screenshotBase64 = null;
 
 	private List<UnityEngine.Vector2> _gazeCoordinates = new List<UnityEngine.Vector2>();
@@ -40,7 +40,7 @@ public class Gaze : MonoBehaviour {
 	}
 
 	public void StartRecordingUserPov() {
-		
+
 		if (_photoCaptureObject == null) return;
 		CameraParameters c = new CameraParameters();
 		c.hologramOpacity = 0.0f;
@@ -54,8 +54,9 @@ public class Gaze : MonoBehaviour {
 
 	public void StopRecordingUserPov() {
 		StopGazeLogging();
-		// TODO - will this work?
-		// _photoCaptureObject.StopPhotoModeAsync(delegate ())
+		if (_photoCaptureObject != null) {
+			_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
+		}
 	}
 
 	private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result) {
@@ -63,31 +64,45 @@ public class Gaze : MonoBehaviour {
 			Debug.LogError("Unable to start photo mode");
 			return;
 		}
-		
+
 		_screenshotBase64 = null;
 		_photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
 	}
 
-	private void OnCapturedPhoto(PhotoCapture.PhotoCaptureResult result, PhotoCaptureFrame photoCaptureFrame) { 
-            List<byte> imageData = new List<byte>();
-            photoCaptureFrame.CopyRawImageDataIntoBuffer(imageData);
-            
-            // Create a JPG using Texture2D from the raw image data
-            Texture2D texture = new Texture2D(_cameraResolution.width, _cameraResolution.height, TextureFormat.BGRA32, false);
-            texture.LoadRawTextureData(imageData.ToArray());
-            texture.Apply();
-            byte[] jpgBytes = texture.EncodeToJPG();
-            Destroy(texture); 
+	private void OnCapturedPhoto(PhotoCapture.PhotoCaptureResult result, PhotoCaptureFrame photoCaptureFrame) {
+		if (!result.success) {
+			Debug.LogError("Failed to capture photo");
+			return;
+		}
 
-            // Convert JPG byte array to Base64 string
-            string _screenshotBase64 = Convert.ToBase64String(jpgBytes);
-            Debug.Log("Base64 Image: " + _screenshotBase64);
+		List<byte> imageData = new List<byte>();
+		photoCaptureFrame.CopyRawImageDataIntoBuffer(imageData);
+
+		Texture2D texture = new Texture2D(_cameraResolution.width, _cameraResolution.height, TextureFormat.BGRA32, false);
+		texture.LoadRawTextureData(imageData.ToArray());
+		texture.Apply();
+		byte[] jpgBytes = texture.EncodeToJPG();
+		Destroy(texture);
+		string _screenshotBase64 = Convert.ToBase64String(jpgBytes);
+		Debug.Log("Base64 Image: " + _screenshotBase64);
+		
+		// Release object for future use
+		_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
+	}
+
+	private void OnStoppedPhotoMode(PhotoCapture.PhotoCaptureResult result) {
+		OnStoppedPhotoMode();
 	}
 
 	private void OnStoppedPhotoMode() {
-		if (_photoCaptureObject == null) return;
-		_photoCaptureObject.Dispose();
+		_photoCaptureObject?.Dispose();
 		_photoCaptureObject = null;
+
+		// Reinitialize photo capture
+		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
+			_photoCaptureObject = captureObject;
+			Debug.Log("Photo capture reinitialized.");
+		});
 	}
 
 	private void StartGazeLogging() {
@@ -104,7 +119,7 @@ public class Gaze : MonoBehaviour {
 
 		float elapsedTime = 0f;
 		Assert.IsTrue(_gazeCoordinates.Count == 0);
-		
+
 		while (true) {
 			float gazeDistance = 1.0f; // TODO - Calculate it using intersection
 			UnityEngine.Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position

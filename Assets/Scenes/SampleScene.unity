@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _phraseActions:
-  - _phrase: hey robocop
+  - _phrase: Bonjour Hololens
     _action:
       m_PersistentCalls:
         m_Calls:
@@ -456,6 +456,7 @@ MonoBehaviour:
   speech: {fileID: 623003964}
   gaze: {fileID: 623003965}
   activationSound: {fileID: 1244179884}
+  deactivationSound: {fileID: 1244179886}
   userHeadInterface: {fileID: 1114549425}
 --- !u!82 &1244179884
 AudioSource:
