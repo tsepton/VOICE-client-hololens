@@ -10,6 +10,12 @@ public class Speech : MonoBehaviour {
 	[SerializeField] private List<PhraseAction> _phraseActions;
 
 	private DictationSubsystem _dictationSubsystem;
+	
+	public bool IsDictationSystemListening => _dictationSubsystem.running;
+
+	public event Action OnDictationStart; 
+	
+	public event Action<string> OnDictationEnd; 
 
 	private void Start() {
 		
@@ -29,12 +35,15 @@ public class Speech : MonoBehaviour {
 		if (_dictationSubsystem != null) {
 			_dictationSubsystem.Recognized += OnRecognized;
 			_dictationSubsystem.RecognitionFinished += OnRecognitionFinished;
+			_dictationSubsystem.RecognitionFaulted += OnRecognitionFinished;
 		}
 	}
 
 	private void OnRecognized(DictationResultEventArgs arg) {
-		Debug.Log(arg.Result);
-		Debug.Log(arg.Confidence);
+		// TODO
+		Debug.Log($"Recognized: ''{arg.Result}'' with a confidence of {arg.Confidence}");
+		_dictationSubsystem.StopDictation();
+		OnDictationEnd?.Invoke(arg.Result);
 	}
 
 	private void OnRecognitionFinished(DictationSessionEventArgs arg) {
@@ -49,6 +58,7 @@ public class Speech : MonoBehaviour {
 			PhraseRecognitionSystem.Shutdown();
 		}
 		_dictationSubsystem.StartDictation();
+		OnDictationStart?.Invoke();
 	}
 
 	[Serializable]
