@@ -5,7 +5,6 @@ using MixedReality.Toolkit.Input;
 using System.Collections.Generic;
 using System.Collections;
 using System;
-using UnityEngine.Assertions;
 
 
 public class Gaze : MonoBehaviour {
@@ -13,7 +12,7 @@ public class Gaze : MonoBehaviour {
 
 	private PhotoCapture _photoCaptureObject = null;
 
-	private Resolution _cameraResolution;
+	private CameraParameters _cameraParameters;
 
 	private string _screenshotBase64 = null;
 
@@ -27,7 +26,12 @@ public class Gaze : MonoBehaviour {
 
 
 	private void Start() {
-		_cameraResolution = PhotoCapture.SupportedResolutions.OrderByDescending((res) => res.width * res.height).Last();
+		_cameraParameters = new CameraParameters();
+		Resolution cameraResolution = PhotoCapture.SupportedResolutions.OrderByDescending((res) => res.width * res.height).Last();
+		_cameraParameters.hologramOpacity = 0.0f;
+		_cameraParameters.cameraResolutionWidth = cameraResolution.width;
+		_cameraParameters.cameraResolutionHeight = cameraResolution.height;
+		_cameraParameters.pixelFormat = CapturePixelFormat.BGRA32;
 
 		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
 			_photoCaptureObject = captureObject;
@@ -36,39 +40,30 @@ public class Gaze : MonoBehaviour {
 	}
 
 	private void OnDestroy() {
-		OnStoppedPhotoMode();
+		_photoCaptureObject?.Dispose();
 	}
 
 	public void StartRecordingUserPov() {
 
+		// Taking a picture 
 		if (_photoCaptureObject == null) return;
-		CameraParameters c = new CameraParameters();
-		c.hologramOpacity = 0.0f;
-		c.cameraResolutionWidth = _cameraResolution.width;
-		c.cameraResolutionHeight = _cameraResolution.height;
-		c.pixelFormat = CapturePixelFormat.BGRA32;
+		_screenshotBase64 = null;
+		_photoCaptureObject.StartPhotoModeAsync(_cameraParameters, OnPhotoModeStarted);
 
-		_photoCaptureObject.StartPhotoModeAsync(c, OnPhotoModeStarted);
-		StartGazeLogging();
+		// Recording gaze data
+		_gazeCoordinates.Clear();
+		_gazeLoggingCoroutine = StartCoroutine(LogGazeCoordinates());
 	}
 
 	public (List<Vector2>, string) StopRecordingUserPov() {
-		StopGazeLogging();
-		if (_photoCaptureObject != null) {
-			_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
-		}
+		if (_gazeLoggingCoroutine != null) StopCoroutine(_gazeLoggingCoroutine);
 		// FIXME - We're making the assumption that the screenshot is ready... 
 		return (_gazeCoordinates, _screenshotBase64);
 	}
 
 	private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result) {
-		if (!result.success) {
-			Debug.LogError("Unable to start photo mode");
-			return;
-		}
-
-		_screenshotBase64 = null;
-		_photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
+		if (!result.success) Debug.LogError("Unable to start photo mode");
+		else _photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
 	}
 
 	private void OnCapturedPhoto(PhotoCapture.PhotoCaptureResult result, PhotoCaptureFrame photoCaptureFrame) {
@@ -80,20 +75,31 @@ public class Gaze : MonoBehaviour {
 		List<byte> imageData = new List<byte>();
 		photoCaptureFrame.CopyRawImageDataIntoBuffer(imageData);
 
-		Texture2D texture = new Texture2D(_cameraResolution.width, _cameraResolution.height, TextureFormat.BGRA32, false);
+		Texture2D texture = new Texture2D(_cameraParameters.cameraResolutionWidth, _cameraParameters.cameraResolutionHeight, TextureFormat.BGRA32, false);
 		texture.LoadRawTextureData(imageData.ToArray());
 		texture.Apply();
-		byte[] jpgBytes = texture.EncodeToJPG();
+		
+		// TODO: Investigate this and check if there is not a more efficient way of fixing the inverted picture.
+		// PS: Thanks ChatGPT. 
+		Texture2D flippedTexture = new Texture2D(texture.width, texture.height, texture.format, false);
+		for (int y = 0; y < texture.height; y++)
+		{
+			Color[] rowPixels = texture.GetPixels(0, y, texture.width, 1);
+			System.Array.Reverse(rowPixels);
+			flippedTexture.SetPixels(0, y, texture.width, 1, rowPixels);
+		}
+		flippedTexture.Apply();
+				
+		
+		byte[] jpgBytes = flippedTexture.EncodeToJPG();
 		Destroy(texture);
-		string _screenshotBase64 = Convert.ToBase64String(jpgBytes);
-		Debug.Log("Base64 Image: " + _screenshotBase64);
+		Destroy(flippedTexture);
+		
+		_screenshotBase64 = Convert.ToBase64String(jpgBytes);
+		Debug.Log("Captured photo successfully.");
 
-		// Release object for future use
-		_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
-	}
-
-	private void OnStoppedPhotoMode(PhotoCapture.PhotoCaptureResult result) {
-		OnStoppedPhotoMode();
+		// Recreate object for future use
+		_photoCaptureObject.StopPhotoModeAsync((_) => OnStoppedPhotoMode());
 	}
 
 	private void OnStoppedPhotoMode() {
@@ -107,19 +113,8 @@ public class Gaze : MonoBehaviour {
 		});
 	}
 
-	private void StartGazeLogging() {
-		_gazeCoordinates.Clear();
-		_gazeLoggingCoroutine = StartCoroutine(LogGazeCoordinates());
-	}
-
-	private void StopGazeLogging() {
-		// FIXME - why is this null?
-		if (_gazeLoggingCoroutine != null) StopCoroutine(_gazeLoggingCoroutine);
-		Debug.Log($"Gaze logging complete. Total points logged: {_gazeCoordinates.Count}");
-	}
-
 	private IEnumerator LogGazeCoordinates() {
-		if (_gazeInteractor == null) Debug.LogError("No _gazeInteractor given.");
+		if (_gazeInteractor == null) Debug.LogError("No gaze interactor given.");
 
 		float elapsedTime = 0f;
 
