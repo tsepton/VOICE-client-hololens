@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Globalization;
 using System.Linq;
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -54,8 +52,8 @@ public class AssistantAPI : MonoBehaviour {
 		byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(question.ToJson());
 		request.uploadHandler = new UploadHandlerRaw(bodyRaw);
 		request.downloadHandler = new DownloadHandlerBuffer();
-		request.timeout = 500; 
-		
+		request.timeout = 500;
+
 		Debug.Log("Sending request to " + _remote);
 		Debug.Log("Request payload: " + question.ToJson());
 
@@ -73,18 +71,20 @@ public class AssistantAPI : MonoBehaviour {
 		}
 	}
 
+	[Serializable]
 	public class Question : RestType {
 		public string query;
 		public string image;
 		public StarePoint[] gaze;
 
-		public Question(string query, string image, StarePoint[] points) {
+		public Question(string query, string base64, StarePoint[] points, string mimeType = "image/jpeg") {
 			this.query = query;
-			this.image = image;
+			this.image = $"data:{mimeType};base64,{base64}";
 			this.gaze = points;
 		}
 	}
 
+	[Serializable]
 	public class StarePoint : RestType {
 		public int x;
 		public int y;
@@ -94,7 +94,7 @@ public class AssistantAPI : MonoBehaviour {
 			this.y = y;
 		}
 
-		public static StarePoint From(UnityEngine.Vector2 vector) {
+		public static StarePoint From(Vector2 vector) {
 			return new StarePoint((int)vector.x, (int)vector.y);
 		}
 	}
