@@ -26,11 +26,11 @@ public class AssistantUI : MonoBehaviour {
 
 	private FileLogger _vassCustomFileLogger;
 
-	void Start() {
+	void Start() {		
 		_vassCustomFileLogger = new FileLogger();
 
 		speech.OnDictationStart += OnDictationStart;
-		speech.OnDictationEnd += (string utterance) => OnDictationEnd(utterance);
+		speech.OnDictationEnd += OnDictationEnd;
 		
 		_loadingIcon.enabled = false;
 		_listeningIcon.enabled = false;
