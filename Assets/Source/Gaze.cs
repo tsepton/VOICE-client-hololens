@@ -9,21 +9,21 @@ using UnityEngine.Assertions;
 
 
 public class Gaze : MonoBehaviour {
+	[SerializeField] private GazeInteractor _gazeInteractor;
+
 	private PhotoCapture _photoCaptureObject = null;
 
 	private Resolution _cameraResolution;
 
-	private String _screenshotBase64 = null;
+	private string _screenshotBase64 = null;
 
-	private List<UnityEngine.Vector2> _gazeCoordinates = new List<UnityEngine.Vector2>();
+	private List<Vector2> _gazeCoordinates = new List<Vector2>();
 
 	private Coroutine _gazeLoggingCoroutine;
 
-	private GazeInteractor _gazeInteractor;
+	public List<Vector2> GazeCoordinates => _gazeCoordinates;
 
-	public List<UnityEngine.Vector2> GazeCoordinates => _gazeCoordinates;
-
-	public String ScreenshotBase64 => _screenshotBase64;
+	public string ScreenshotBase64 => _screenshotBase64;
 
 
 	private void Start() {
@@ -52,11 +52,13 @@ public class Gaze : MonoBehaviour {
 		StartGazeLogging();
 	}
 
-	public void StopRecordingUserPov() {
+	public (List<Vector2>, string) StopRecordingUserPov() {
 		StopGazeLogging();
 		if (_photoCaptureObject != null) {
 			_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
 		}
+		// FIXME - We're making the assumption that the screenshot is ready... 
+		return (_gazeCoordinates, _screenshotBase64);
 	}
 
 	private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result) {
@@ -85,7 +87,7 @@ public class Gaze : MonoBehaviour {
 		Destroy(texture);
 		string _screenshotBase64 = Convert.ToBase64String(jpgBytes);
 		Debug.Log("Base64 Image: " + _screenshotBase64);
-		
+
 		// Release object for future use
 		_photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
 	}
@@ -111,22 +113,23 @@ public class Gaze : MonoBehaviour {
 	}
 
 	private void StopGazeLogging() {
-		StopCoroutine(_gazeLoggingCoroutine);
-		Debug.Log("Gaze logging complete. Total points logged: " + _gazeCoordinates.Count);
+		// FIXME - why is this null?
+		if (_gazeLoggingCoroutine != null) StopCoroutine(_gazeLoggingCoroutine);
+		Debug.Log($"Gaze logging complete. Total points logged: {_gazeCoordinates.Count}");
 	}
 
 	private IEnumerator LogGazeCoordinates() {
+		if (_gazeInteractor == null) Debug.LogError("No _gazeInteractor given.");
 
 		float elapsedTime = 0f;
-		Assert.IsTrue(_gazeCoordinates.Count == 0);
 
 		while (true) {
 			float gazeDistance = 1.0f; // TODO - Calculate it using intersection
-			UnityEngine.Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
+			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
 				+ _gazeInteractor.rayOriginTransform.forward * gazeDistance;
 
-			UnityEngine.Vector3 gazePointScreen = Camera.main.WorldToScreenPoint(gazePointWorld);
-			UnityEngine.Vector2 gazePointScreen2D = new UnityEngine.Vector2(gazePointScreen.x, gazePointScreen.y);
+			Vector3 gazePointScreen = Camera.main.WorldToScreenPoint(gazePointWorld);
+			Vector2 gazePointScreen2D = new Vector2(gazePointScreen.x, gazePointScreen.y);
 			_gazeCoordinates.Add(gazePointScreen2D);
 
 			yield return new WaitForSeconds(0.1f);
