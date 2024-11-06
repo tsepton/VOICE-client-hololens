@@ -257,6 +257,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66d9d3e1bc0f16c4c835bd06b372b2c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gazeInteractor: {fileID: 779833894}
+--- !u!114 &779833894 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 529201713281613631, guid: acbf65a81ce2cf94f82a0809298acf70, type: 3}
+  m_PrefabInstance: {fileID: 866239990}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1175590bcfccd6d44a4c8f9a15292536, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &866239990
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -570,8 +582,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 624cdeeb5bf02084dbf4a36cd2bdefb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speech: {fileID: 623003964}
-  gaze: {fileID: 623003965}
+  _remote: http://192.168.0.125:3000
+  _speech: {fileID: 623003964}
+  _gaze: {fileID: 623003965}
 --- !u!82 &1244179886
 AudioSource:
   m_ObjectHideFlags: 0
@@ -702,7 +715,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -175}
+  m_AnchoredPosition: {x: 0, y: -200}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1390231105
