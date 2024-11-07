@@ -12,8 +12,18 @@ public class AssistantAPI : MonoBehaviour {
 
 	[SerializeField] private Gaze _gaze;
 
+	private NetworkAvailability _networkAvailability = NetworkAvailability.Connecting;
+	
+	public NetworkAvailability NetworkAvailability => _networkAvailability;
+
+	public event Action<string> OnAskAnswer;
+
+	public event Action<NetworkAvailability> OnPingAnswer;
+
 	void Start() {
 		if (_remote == null || _remote == "") Debug.LogError("_remote URI was not set.");
+
+		StartCoroutine(CheckConnectivity());
 
 		_speech.OnDictationStart += _gaze.StartRecordingUserPov;
 		_speech.OnDictationEnd += (string utterance) => {
@@ -26,7 +36,6 @@ public class AssistantAPI : MonoBehaviour {
 			);
 			StartCoroutine(Ask(question));
 		};
-		StartCoroutine(Ping());
 	}
 
 	private IEnumerator Ping() {
@@ -38,10 +47,13 @@ public class AssistantAPI : MonoBehaviour {
 		Debug.Log("Sending request to " + _remote);
 		yield return request.SendWebRequest();
 
-		if (request.result == UnityWebRequest.Result.Success)
+		if (request.result == UnityWebRequest.Result.Success) {
+			OnPingAnswer?.Invoke(NetworkAvailability.Connected);
 			Debug.Log("Response: " + request.downloadHandler.text);
-		else Debug.LogError("Request failed: " + request.error);
-
+		} else {
+			OnPingAnswer?.Invoke(NetworkAvailability.Error);
+			Debug.LogError("Request failed: " + request.error);
+		}
 	}
 
 
@@ -59,9 +71,18 @@ public class AssistantAPI : MonoBehaviour {
 
 		yield return request.SendWebRequest();
 
-		if (request.result == UnityWebRequest.Result.Success)
+		if (request.result == UnityWebRequest.Result.Success) {
+			OnAskAnswer?.Invoke(request.downloadHandler.text);
 			Debug.Log("Response: " + request.downloadHandler.text);
-		else Debug.LogError("Request failed: " + request.error);
+		} else Debug.LogError("Request failed: " + request.error);
+	}
+
+	private IEnumerator CheckConnectivity() {
+		OnPingAnswer += (NetworkAvailability status) => _networkAvailability = status;
+		while (true) {
+			StartCoroutine(Ping());
+			yield return new WaitForSeconds(30f);
+		}
 	}
 
 	[Serializable]
@@ -99,4 +120,8 @@ public class AssistantAPI : MonoBehaviour {
 		}
 	}
 
+}
+
+public enum NetworkAvailability {
+	Connected, Connecting, Error
 }
