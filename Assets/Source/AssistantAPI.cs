@@ -41,6 +41,8 @@ public class AssistantAPI : MonoBehaviour {
 
 
 	public IEnumerator Ask(Question question) {
+		OnAskStart?.Invoke();
+		
 		var endpoint = $"{_remote}/ask";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
