@@ -1,6 +1,13 @@
 using UnityEngine;
 using System.IO;
 using System;
+using Unity.VisualScripting;
+
+public class FileLoggerBehavior : MonoBehaviour {
+	private void Start() {
+		new FileLogger();
+	}
+}
 
 public class FileLogger : ILogHandler {
 	private FileStream m_FileStream;
@@ -9,7 +16,7 @@ public class FileLogger : ILogHandler {
 
 	// TODO - make this a static method
 	public FileLogger() {
-		
+
 		string filePath = Application.persistentDataPath + $"/development_logs_{DateTime.Now.ToFileTime()}.txt";
 		Debug.Log($"App logs will be available inside: {filePath}");
 
