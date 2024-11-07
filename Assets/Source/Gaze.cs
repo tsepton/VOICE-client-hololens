@@ -36,19 +36,26 @@ public class Gaze : MonoBehaviour {
 		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
 			_photoCaptureObject = captureObject;
 			Debug.Log("Photo capture initiliazed.");
+			_photoCaptureObject.StartPhotoModeAsync(_cameraParameters, OnPhotoModeStarted);
 		});
 	}
 
 	private void OnDestroy() {
-		_photoCaptureObject?.Dispose();
+		_photoCaptureObject.StopPhotoModeAsync((_) => {
+			_photoCaptureObject?.Dispose();
+			_photoCaptureObject = null;
+		});
 	}
 
 	public void StartRecordingUserPov() {
 
 		// Taking a picture 
-		if (_photoCaptureObject == null) return;
+		if (_photoCaptureObject == null) {
+			Debug.LogError("Photo mode not started");
+			return;
+		};
 		_screenshotBase64 = null;
-		_photoCaptureObject.StartPhotoModeAsync(_cameraParameters, OnPhotoModeStarted);
+		_photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
 
 		// Recording gaze data
 		_gazeCoordinates.Clear();
@@ -63,7 +70,7 @@ public class Gaze : MonoBehaviour {
 
 	private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result) {
 		if (!result.success) Debug.LogError("Unable to start photo mode");
-		else _photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
+		else Debug.Log("Photo mode started successfully");
 	}
 
 	private void OnCapturedPhoto(PhotoCapture.PhotoCaptureResult result, PhotoCaptureFrame photoCaptureFrame) {
@@ -81,36 +88,23 @@ public class Gaze : MonoBehaviour {
 		
 		// TODO: Investigate this and check if there is not a more efficient way of fixing the inverted picture.
 		// PS: Thanks ChatGPT. 
-		Texture2D flippedTexture = new Texture2D(texture.width, texture.height, texture.format, false);
-		for (int y = 0; y < texture.height; y++)
-		{
-			Color[] rowPixels = texture.GetPixels(0, y, texture.width, 1);
-			System.Array.Reverse(rowPixels);
-			flippedTexture.SetPixels(0, y, texture.width, 1, rowPixels);
-		}
-		flippedTexture.Apply();
+		// Texture2D flippedTexture = new Texture2D(texture.width, texture.height, texture.format, false);
+		// for (int y = 0; y < texture.height; y++)
+		// {
+		// 	Color[] rowPixels = texture.GetPixels(0, y, texture.width, 1);
+		// 	System.Array.Reverse(rowPixels);
+		// 	flippedTexture.SetPixels(0, y, texture.width, 1, rowPixels);
+		// }
+		// flippedTexture.Apply();
 				
 		
-		byte[] jpgBytes = flippedTexture.EncodeToJPG();
+		byte[] jpgBytes = texture.EncodeToJPG();
+		// byte[] jpgBytes = flippedTexture.EncodeToJPG();
 		Destroy(texture);
-		Destroy(flippedTexture);
+		// Destroy(flippedTexture);
 		
 		_screenshotBase64 = Convert.ToBase64String(jpgBytes);
 		Debug.Log("Captured photo successfully.");
-
-		// Recreate object for future use
-		_photoCaptureObject.StopPhotoModeAsync((_) => OnStoppedPhotoMode());
-	}
-
-	private void OnStoppedPhotoMode() {
-		_photoCaptureObject?.Dispose();
-		_photoCaptureObject = null;
-
-		// Reinitialize photo capture
-		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
-			_photoCaptureObject = captureObject;
-			Debug.Log("Photo capture reinitialized.");
-		});
 	}
 
 	private IEnumerator LogGazeCoordinates() {
