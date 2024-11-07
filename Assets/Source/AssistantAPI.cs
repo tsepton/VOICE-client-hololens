@@ -12,33 +12,16 @@ public class AssistantAPI : MonoBehaviour {
 
 	[SerializeField] private Gaze _gaze;
 
-	private NetworkAvailability _networkAvailability = NetworkAvailability.Connecting;
-	
-	public NetworkAvailability NetworkAvailability => _networkAvailability;
-
+	public event Action OnAskStart;
 	public event Action<string> OnAskAnswer;
 
 	public event Action<NetworkAvailability> OnPingAnswer;
 
 	void Start() {
 		if (_remote == null || _remote == "") Debug.LogError("_remote URI was not set.");
-
-		StartCoroutine(CheckConnectivity());
-
-		_speech.OnDictationStart += _gaze.StartRecordingUserPov;
-		_speech.OnDictationEnd += (string utterance) => {
-			var (vectors, screenshot) = _gaze.StopRecordingUserPov();
-
-			var question = new Question(
-				utterance,
-				screenshot,
-				vectors.Select(vec => StarePoint.From(vec)).ToArray()
-			);
-			StartCoroutine(Ask(question));
-		};
 	}
 
-	private IEnumerator Ping() {
+	public IEnumerator Ping() {
 		var endpoint = $"{_remote}/";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
@@ -57,7 +40,7 @@ public class AssistantAPI : MonoBehaviour {
 	}
 
 
-	private IEnumerator Ask(Question question) {
+	public IEnumerator Ask(Question question) {
 		var endpoint = $"{_remote}/ask";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
@@ -74,15 +57,10 @@ public class AssistantAPI : MonoBehaviour {
 		if (request.result == UnityWebRequest.Result.Success) {
 			OnAskAnswer?.Invoke(request.downloadHandler.text);
 			Debug.Log("Response: " + request.downloadHandler.text);
-		} else Debug.LogError("Request failed: " + request.error);
-	}
-
-	private IEnumerator CheckConnectivity() {
-		OnPingAnswer += (NetworkAvailability status) => _networkAvailability = status;
-		while (true) {
-			StartCoroutine(Ping());
-			yield return new WaitForSeconds(30f);
-		}
+		} else {
+			OnAskAnswer?.Invoke("Error...");
+			Debug.LogError("Request failed: " + request.error);
+		};
 	}
 
 	[Serializable]
