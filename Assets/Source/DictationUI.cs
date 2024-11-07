@@ -79,6 +79,8 @@ public class DictationUI : MonoBehaviour {
 	private void OnAskAnswer_UI(string answer) {
 		_loadingIcon.enabled = false;
 		_answer.text = answer;
+		// TODO - text to speech instead !
+		// https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk3-core/packages/core/subsystems/texttospeechsubsystem
 	}
 
 	private void OnDictationEnd(string utterance) {
