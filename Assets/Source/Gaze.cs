@@ -85,7 +85,7 @@ public class Gaze : MonoBehaviour {
 		Texture2D texture = new Texture2D(_cameraParameters.cameraResolutionWidth, _cameraParameters.cameraResolutionHeight, TextureFormat.BGRA32, false);
 		texture.LoadRawTextureData(imageData.ToArray());
 		texture.Apply();
-		
+
 		// TODO: Investigate this and check if there is not a more efficient way of fixing the inverted picture.
 		// PS: Thanks ChatGPT. 
 		// Texture2D flippedTexture = new Texture2D(texture.width, texture.height, texture.format, false);
@@ -96,13 +96,13 @@ public class Gaze : MonoBehaviour {
 		// 	flippedTexture.SetPixels(0, y, texture.width, 1, rowPixels);
 		// }
 		// flippedTexture.Apply();
-				
-		
+
+
 		byte[] jpgBytes = texture.EncodeToJPG();
 		// byte[] jpgBytes = flippedTexture.EncodeToJPG();
 		Destroy(texture);
 		// Destroy(flippedTexture);
-		
+
 		_screenshotBase64 = Convert.ToBase64String(jpgBytes);
 		Debug.Log("Captured photo successfully.");
 	}
@@ -112,13 +112,16 @@ public class Gaze : MonoBehaviour {
 
 		float elapsedTime = 0f;
 
-		while (true) {
-			float gazeDistance = 1.0f; // TODO - Calculate it using intersection
-			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
-				+ _gazeInteractor.rayOriginTransform.forward * gazeDistance;
+		var width = _cameraParameters.cameraResolutionWidth;
+		var height = _cameraParameters.cameraResolutionHeight;
 
-			Vector3 gazePointScreen = Camera.main.WorldToScreenPoint(gazePointWorld);
-			Vector2 gazePointScreen2D = new Vector2(gazePointScreen.x, gazePointScreen.y);
+		while (true) {
+			// float gazeDistance = 2.5f; // TODO - Calculate it using intersection
+			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
+				+ _gazeInteractor.rayOriginTransform.forward; // * gazeDistance;
+
+			Vector3 gazePointScreen = Camera.main.WorldToViewportPoint(gazePointWorld);
+			Vector2 gazePointScreen2D = new Vector2(gazePointScreen.x * width, gazePointScreen.y * height);
 			_gazeCoordinates.Add(gazePointScreen2D);
 
 			yield return new WaitForSeconds(0.1f);
