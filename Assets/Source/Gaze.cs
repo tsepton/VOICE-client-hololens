@@ -86,22 +86,15 @@ public class Gaze : MonoBehaviour {
 		texture.LoadRawTextureData(imageData.ToArray());
 		texture.Apply();
 
-		// TODO: Investigate this and check if there is not a more efficient way of fixing the inverted picture.
-		// PS: Thanks ChatGPT. 
-		// Texture2D flippedTexture = new Texture2D(texture.width, texture.height, texture.format, false);
-		// for (int y = 0; y < texture.height; y++)
-		// {
-		// 	Color[] rowPixels = texture.GetPixels(0, y, texture.width, 1);
-		// 	System.Array.Reverse(rowPixels);
-		// 	flippedTexture.SetPixels(0, y, texture.width, 1, rowPixels);
-		// }
-		// flippedTexture.Apply();
 
-
-		byte[] jpgBytes = texture.EncodeToJPG();
-		// byte[] jpgBytes = flippedTexture.EncodeToJPG();
+		Texture2D flippedTexture = new Texture2D(texture.width, texture.height);
+		for (int y = 0; y < texture.height; y++) {
+			flippedTexture.SetPixels(0, texture.height - y - 1, texture.width, 1, texture.GetPixels(0, y, texture.width, 1));
+		}
+		flippedTexture.Apply();
+		byte[] jpgBytes = flippedTexture.EncodeToJPG();
 		Destroy(texture);
-		// Destroy(flippedTexture);
+		Destroy(flippedTexture);
 
 		_screenshotBase64 = Convert.ToBase64String(jpgBytes);
 		Debug.Log("Captured photo successfully.");
@@ -124,8 +117,8 @@ public class Gaze : MonoBehaviour {
 			Vector2 gazePointScreen2D = new Vector2(gazePointScreen.x * width, gazePointScreen.y * height);
 			_gazeCoordinates.Add(gazePointScreen2D);
 
-			yield return new WaitForSeconds(0.1f);
-			elapsedTime += 0.1f;
+			yield return new WaitForSeconds(0.05f);
+			elapsedTime += 0.05f;
 		}
 	}
 }
