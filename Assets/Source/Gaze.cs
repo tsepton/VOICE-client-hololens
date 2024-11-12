@@ -116,9 +116,9 @@ public class Gaze : MonoBehaviour {
 		var height = _cameraParameters.cameraResolutionHeight;
 
 		while (true) {
-			// float gazeDistance = 2.5f; // TODO - Calculate it using intersection
+			float gazeDistance = 2.5f; // TODO - Calculate it using intersection
 			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
-				+ _gazeInteractor.rayOriginTransform.forward; // * gazeDistance;
+				+ _gazeInteractor.rayOriginTransform.forward * gazeDistance;
 
 			Vector3 gazePointScreen = Camera.main.WorldToViewportPoint(gazePointWorld);
 			Vector2 gazePointScreen2D = new Vector2(gazePointScreen.x * width, gazePointScreen.y * height);
