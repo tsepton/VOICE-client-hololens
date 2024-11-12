@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using static AssistantAPI;
 using System.Linq;
+using MixedReality.Toolkit.Subsystems;
+using MixedReality.Toolkit;
 
 
 public class DictationUI : MonoBehaviour {
@@ -28,6 +30,8 @@ public class DictationUI : MonoBehaviour {
 
 	[SerializeField] private TextMeshProUGUI _answer;
 
+	private TextToSpeechSubsystem _textToSpeechSubsystem;
+
 	void OnEnable() {
 		_listeningIcon.enabled = false;
 		_loadingIcon.enabled = false;
@@ -41,6 +45,7 @@ public class DictationUI : MonoBehaviour {
 		_api.OnAskStart += OnAskStart_UI;
 		_api.OnAskAnswer += OnAskAnswer_UI;
 
+		_textToSpeechSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<TextToSpeechSubsystem>();
 	}
 
 	void OnDisable() {
@@ -76,11 +81,11 @@ public class DictationUI : MonoBehaviour {
 
 	}
 
-	private void OnAskAnswer_UI(string answer) {
+	private void OnAskAnswer_UI(string jsonString) {
 		_loadingIcon.enabled = false;
-		_answer.text = answer;
-		// TODO - text to speech instead !
-		// https://learn.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/mrtk3-core/packages/core/subsystems/texttospeechsubsystem
+		Answer json = JsonUtility.FromJson<Answer>(jsonString);
+		_answer.text = json.answer;
+		_textToSpeechSubsystem.TrySpeak(json.answer, _audioSource);
 	}
 
 	private void OnDictationEnd(string utterance) {

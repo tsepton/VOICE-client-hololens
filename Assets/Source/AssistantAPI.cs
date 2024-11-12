@@ -42,7 +42,7 @@ public class AssistantAPI : MonoBehaviour {
 
 	public IEnumerator Ask(Question question) {
 		OnAskStart?.Invoke();
-		
+
 		var endpoint = $"{_remote}/ask";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
@@ -98,6 +98,12 @@ public class AssistantAPI : MonoBehaviour {
 		public static StarePoint From(Vector2 vector) {
 			return new StarePoint((int)vector.x, (int)vector.y);
 		}
+	}
+
+	// This class will change - This is temporary
+	[Serializable]
+	public class Answer : RestType {
+		public string answer;
 	}
 
 }
