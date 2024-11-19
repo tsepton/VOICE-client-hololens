@@ -78,13 +78,13 @@ public class DictationUI : MonoBehaviour {
 
 	private void OnAskStart_UI() {
 		_loadingIcon.enabled = true;
-
 	}
 
 	private void OnAskAnswer_UI(string jsonString) {
 		_loadingIcon.enabled = false;
+		_utterance.text = "";
 		Answer json = JsonUtility.FromJson<Answer>(jsonString);
-		_answer.text = json.answer;
+		// _answer.text = json.answer;
 		_textToSpeechSubsystem.TrySpeak(json.answer, _audioSource);
 	}
 
