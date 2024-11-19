@@ -109,8 +109,7 @@ public class Gaze : MonoBehaviour {
 		var height = _cameraParameters.cameraResolutionHeight;
 
 		while (true) {
-			// fixme : Gaze coordinates are flipped ...
-			float gazeDistance = 2.5f; // TODO - Calculate it using intersection
+			float gazeDistance = 0.75f; // TODO - Calculate it using intersection
 			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
 				+ _gazeInteractor.rayOriginTransform.forward * gazeDistance;
 
