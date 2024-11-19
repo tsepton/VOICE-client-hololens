@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class AssistantAPI : MonoBehaviour {
 
-	[SerializeField] private string _remote = "http://192.168.0.125:3000";
+	[SerializeField] private string _remote = "http://192.168.0.113:3000";
 
 	[SerializeField] private Speech _speech;
 
@@ -21,8 +21,8 @@ public class AssistantAPI : MonoBehaviour {
 		if (_remote == null || _remote == "") Debug.LogError("_remote URI was not set.");
 	}
 
-	public IEnumerator Ping() {
-		var endpoint = $"{_remote}/";
+	public IEnumerator CheckStatus() {
+		var endpoint = $"{_remote}/status";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
 		request.downloadHandler = new DownloadHandlerBuffer();
@@ -40,10 +40,10 @@ public class AssistantAPI : MonoBehaviour {
 	}
 
 
-	public IEnumerator Ask(Question question) {
+	public IEnumerator AskQuestion(Question question) {
 		OnAskStart?.Invoke();
 
-		var endpoint = $"{_remote}/ask";
+		var endpoint = $"{_remote}/question";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
 		byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(question.ToJson());

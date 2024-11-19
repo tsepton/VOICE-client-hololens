@@ -39,7 +39,7 @@ public class NetworkUI : MonoBehaviour {
 
 	private IEnumerator CheckConnectivityPeriodically() {
 		while (true) {
-			StartCoroutine(_api.Ping());
+			StartCoroutine(_api.CheckStatus());
 			yield return new WaitForSeconds(30f);
 		}
 	}

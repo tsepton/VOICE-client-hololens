@@ -96,7 +96,7 @@ public class DictationUI : MonoBehaviour {
 			screenshot,
 			vectors.Select(vec => StarePoint.From(vec)).ToArray()
 		);
-		StartCoroutine(_api.Ask(question));
+		StartCoroutine(_api.AskQuestion(question));
 
 	}
 
