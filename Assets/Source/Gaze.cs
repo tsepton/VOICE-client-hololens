@@ -32,18 +32,21 @@ public class Gaze : MonoBehaviour {
 		_cameraParameters.cameraResolutionWidth = cameraResolution.width;
 		_cameraParameters.cameraResolutionHeight = cameraResolution.height;
 		_cameraParameters.pixelFormat = CapturePixelFormat.BGRA32;
-
-		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
-			_photoCaptureObject = captureObject;
-			Debug.Log("Photo capture initiliazed.");
-			_photoCaptureObject.StartPhotoModeAsync(_cameraParameters, OnPhotoModeStarted);
-		});
+		InitPhotoCapture();
 	}
 
 	private void OnDestroy() {
 		_photoCaptureObject.StopPhotoModeAsync((_) => {
 			_photoCaptureObject?.Dispose();
 			_photoCaptureObject = null;
+		});
+	}
+
+	public void InitPhotoCapture() {
+		PhotoCapture.CreateAsync(true, delegate (PhotoCapture captureObject) {
+			_photoCaptureObject = captureObject;
+			Debug.Log("Photo capture initiliazed.");
+			_photoCaptureObject.StartPhotoModeAsync(_cameraParameters, OnPhotoModeStarted);
 		});
 	}
 

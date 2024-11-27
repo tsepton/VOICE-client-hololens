@@ -31,10 +31,15 @@ public class DictationUI : MonoBehaviour {
 	[SerializeField] private TextMeshProUGUI _answer;
 
 	private TextToSpeechSubsystem _textToSpeechSubsystem;
+	
+	private string DEFAULT_PLACEHOLDER = "Say `Hey Hololens!` and ask me anything!";
 
 	void OnEnable() {
 		_listeningIcon.enabled = false;
 		_loadingIcon.enabled = false;
+		_utterance.text = DEFAULT_PLACEHOLDER;
+		
+		_textToSpeechSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<TextToSpeechSubsystem>();
 
 		_speech.OnDictationStart += OnDictationStart_UI;
 		_speech.OnDictationEnd += OnDictationEnd_UI;
@@ -44,8 +49,6 @@ public class DictationUI : MonoBehaviour {
 
 		_api.OnAskStart += OnAskStart_UI;
 		_api.OnAskAnswer += OnAskAnswer_UI;
-
-		_textToSpeechSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<TextToSpeechSubsystem>();
 	}
 
 	void OnDisable() {
@@ -82,7 +85,7 @@ public class DictationUI : MonoBehaviour {
 
 	private void OnAskAnswer_UI(string jsonString) {
 		_loadingIcon.enabled = false;
-		_utterance.text = "";
+		_utterance.text = DEFAULT_PLACEHOLDER;
 		Answer json = JsonUtility.FromJson<Answer>(jsonString);
 		// _answer.text = json.answer;
 		_textToSpeechSubsystem.TrySpeak(json.answer, _audioSource);

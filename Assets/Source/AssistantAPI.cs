@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class AssistantAPI : MonoBehaviour {
 
-	[SerializeField] private string _remote = "http://192.168.0.113:3000";
+	[SerializeField] public string remote = "http://192.168.0.113:3000";
 
 	[SerializeField] private Speech _speech;
 
@@ -18,16 +18,16 @@ public class AssistantAPI : MonoBehaviour {
 	public event Action<NetworkAvailability> OnPingAnswer;
 
 	void Start() {
-		if (_remote == null || _remote == "") Debug.LogError("_remote URI was not set.");
+		if (remote == null || remote == "") Debug.LogError("_remote URI was not set.");
 	}
 
 	public IEnumerator CheckStatus() {
-		var endpoint = $"{_remote}/status";
+		var endpoint = $"{remote}/status";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
 		request.downloadHandler = new DownloadHandlerBuffer();
 
-		Debug.Log("Sending request to " + _remote);
+		Debug.Log("Sending request to " + remote);
 		yield return request.SendWebRequest();
 
 		if (request.result == UnityWebRequest.Result.Success) {
@@ -43,7 +43,7 @@ public class AssistantAPI : MonoBehaviour {
 	public IEnumerator AskQuestion(Question question) {
 		OnAskStart?.Invoke();
 
-		var endpoint = $"{_remote}/question";
+		var endpoint = $"{remote}/question";
 		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
 		request.SetRequestHeader("Content-Type", "application/json");
 		byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(question.ToJson());
@@ -51,7 +51,7 @@ public class AssistantAPI : MonoBehaviour {
 		request.downloadHandler = new DownloadHandlerBuffer();
 		request.timeout = 500;
 
-		Debug.Log("Sending request to " + _remote);
+		Debug.Log("Sending request to " + remote);
 		Debug.Log("Request payload: " + question.ToJson());
 
 		yield return request.SendWebRequest();
