@@ -1,6 +1,6 @@
 # VOICE Client for Hololens 2
 
-> This repository is part of the VOICE Operating In Contextual Environments (VOICE) project.
+> This repository is part of the [VOICE Operating In Contextual Environments (VOICE)](https://github.com/tsepton/VOICE) project.
 
 ## Pre-requisites
 App was built using Unity `2022.3.51f`. 
