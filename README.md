@@ -1,10 +1,10 @@
-# Vass Client for Hololens 2
+# VOICE Client for Hololens 2
 
-> This repository is part of the Vass project.
+> This repository is part of the VOICE Operating In Contextual Environments (VOICE) project.
 
 ## Pre-requisites
 App was built using Unity `2022.3.51f`. 
-Open the project with Unity, and update the URL to a running [Vass Backend](https://github.com/tsepton/vass-backend): 
+Open the project with Unity, and update the URL to a running [VOICE Backend](https://github.com/tsepton/VOICE-backend): 
 1. Open the `Default` scene.
 2. Under the `Voice Assistant`>`API` Gameobject, update the `Remote` field with the appropriate URL. 
 ##### FIXME - this should be asked when app opens 
