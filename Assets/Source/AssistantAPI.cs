@@ -1,15 +1,11 @@
 using System;
 using System.Collections;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.Networking;
 
 #if ENABLE_WINMD_SUPPORT
+using System.Threading.Tasks;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
-using Windows.Networking.Sockets.MessageWebSocket;
 #endif
 
 public class AssistantAPI : MonoBehaviour {
@@ -46,8 +42,6 @@ public class AssistantAPI : MonoBehaviour {
 	async void Start() {
 		await ConnectWebSocket();
 		if (remote == null || remote == "") Debug.LogError("_remote URI was not set.");
-		
-
 	}
 	
 	private void OnDestroy() {
@@ -79,7 +73,7 @@ public class AssistantAPI : MonoBehaviour {
 		}
 	}
 
-	private async Task SendMessage(string message) {
+	private new async Task SendMessage(string message) {
 		if (webSocket == null || messageWriter == null) {
 			Debug.LogWarning("WebSocket not connected.");
 			return;
@@ -112,17 +106,16 @@ public class AssistantAPI : MonoBehaviour {
 	public IEnumerator AskQuestion(Question question) {
 		
 		string wsMessageType = WebSocket_MessageType.Question;
-		string message = System.Text.Encoding.UTF8.GetString(question.ToJson());
-		SendMessage(message);
+		await SendMessage(question.ToJson());
 		
 		// TODO
-		if (request.result == UnityWebRequest.Result.Success) {
-			OnAskAnswer?.Invoke(request.downloadHandler.text);
-			Debug.Log("Response: " + request.downloadHandler.text);
-		} else {
-			OnAskAnswer?.Invoke("Error...");
-			Debug.LogError("Request failed: " + request.error);
-		};
+		// if (request.result == UnityWebRequest.Result.Success) {
+		// 	OnAskAnswer?.Invoke(request.downloadHandler.text);
+		// 	Debug.Log("Response: " + request.downloadHandler.text);
+		// } else {
+		// 	OnAskAnswer?.Invoke("Error...");
+		// 	Debug.LogError("Request failed: " + request.error);
+		// };
 	}
 	
 #endif
