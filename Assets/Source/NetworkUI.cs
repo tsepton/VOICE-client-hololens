@@ -20,15 +20,14 @@ public class NetworkUI : MonoBehaviour {
 		_dictationUI.SetActive(false);
 		_modalities.SetActive(false);
 
-		_api.OnPingAnswer += UpdateUiBasedOnNetworkStatus;
-		StartCoroutine(CheckConnectivityPeriodically());
+		UpdateUiBasedOnNetworkStatus(_api.Status);
+		_api.OnStatusChanged += UpdateUiBasedOnNetworkStatus;
 
 		_networkUrl.text = _api.remote;
 		_networkUrl.onEndEdit.AddListener((string address) => {
 			_api.remote = address;
 		});
 
-		UpdateUiBasedOnNetworkStatus(NetworkAvailability.Connecting);
 	}
 
 	private void UpdateUiBasedOnNetworkStatus(NetworkAvailability status) {
@@ -46,13 +45,6 @@ public class NetworkUI : MonoBehaviour {
 				_modalities.SetActive(false);
 				_loadingIcon.enabled = _api.remote != null && _api.remote != "";
 				break;
-		}
-	}
-
-	private IEnumerator CheckConnectivityPeriodically() {
-		while (true) {
-			StartCoroutine(_api.CheckStatus());
-			yield return new WaitForSeconds(5f);
 		}
 	}
 

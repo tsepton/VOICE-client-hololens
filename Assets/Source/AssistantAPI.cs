@@ -1,61 +1,121 @@
 using System;
 using System.Collections;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Networking;
 
+#if ENABLE_WINMD_SUPPORT
+using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
+using Windows.Networking.Sockets.MessageWebSocket;
+#endif
+
 public class AssistantAPI : MonoBehaviour {
 
-	[SerializeField] public string remote = "http://192.168.0.113:3000";
+	public event Action OnAskStart;
+
+	public event Action<string> OnAskAnswer;
+
+	public event Action<NetworkAvailability> OnStatusChanged;
+
+	private NetworkAvailability status;
+
+	public NetworkAvailability Status {
+		get { return status; }
+		set {
+			status = value;
+			OnStatusChanged?.Invoke(status);
+		}
+	}
+
+	[SerializeField] public string remote = "ws://192.168.0.176:3000";
 
 	[SerializeField] private Speech _speech;
 
 	[SerializeField] private Gaze _gaze;
 
-	public event Action OnAskStart;
-	public event Action<string> OnAskAnswer;
 
-	public event Action<NetworkAvailability> OnPingAnswer;
-
-	void Start() {
+#if ENABLE_WINMD_SUPPORT
+		
+	private MessageWebSocket webSocket;
+	
+	private DataWriter messageWriter;
+	
+	async void Start() {
+		await ConnectWebSocket();
 		if (remote == null || remote == "") Debug.LogError("_remote URI was not set.");
+		
+
+	}
+	
+	private void OnDestroy() {
+		webSocket?.Dispose();
+		webSocket = null;
 	}
 
-	public IEnumerator CheckStatus() {
-		var endpoint = $"{remote}/status";
-		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
-		request.SetRequestHeader("Content-Type", "application/json");
-		request.downloadHandler = new DownloadHandlerBuffer();
+	private async Task ConnectWebSocket() {
+		try {
+			Status =  NetworkAvailability.Connecting;
 
-		Debug.Log("Sending request to " + remote);
-		yield return request.SendWebRequest();
+			webSocket = new MessageWebSocket();
+			webSocket.Control.MessageType = SocketMessageType.Utf8;
 
-		if (request.result == UnityWebRequest.Result.Success) {
-			OnPingAnswer?.Invoke(NetworkAvailability.Connected);
-			Debug.Log("Response: " + request.downloadHandler.text);
-		} else {
-			OnPingAnswer?.Invoke(NetworkAvailability.Error);
-			Debug.LogError("Request failed: " + request.error);
+			webSocket.MessageReceived += WebSocket_MessageReceived;
+			webSocket.Closed += WebSocket_Closed;
+			
+			Uri serverUri = new Uri(remote);
+			await webSocket.ConnectAsync(serverUri);
+			messageWriter = new DataWriter(webSocket.OutputStream);
+			Status =  NetworkAvailability.Connected;
+			Debug.Log("Connected to distant VOICE server.");
+			
+			await SendMessage("Hello from HoloLens 2!"); // TODO - this is to be removed
 		}
+		catch (Exception e) {
+			Status =  NetworkAvailability.Error;
+			Debug.LogError($"WebSocket Error: {e.Message}");
+		}
+	}
+
+	private async Task SendMessage(string message) {
+		if (webSocket == null || messageWriter == null) {
+			Debug.LogWarning("WebSocket not connected.");
+			return;
+		}
+
+		messageWriter.WriteString(message);
+		await messageWriter.StoreAsync();
+		Debug.Log("Message sent: " + message);
+	}
+
+	private void WebSocket_MessageReceived(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args) {
+		try {
+			using (DataReader reader = args.GetDataReader()) {
+				reader.UnicodeEncoding = UnicodeEncoding.Utf8;
+				string receivedMessage = reader.ReadString(reader.UnconsumedBufferLength);
+				Debug.Log("Message received: " + receivedMessage);
+			}
+		}
+		catch (Exception ex) {
+			Debug.LogError($"WebSocket Receive Error: {ex.Message}");
+		}
+	}
+
+	private void WebSocket_Closed(IWebSocket sender, WebSocketClosedEventArgs args) {
+		Debug.LogWarning($"WebSocket closed: Code={args.Code}, Reason={args.Reason}");
+		Status =  NetworkAvailability.Closed;
 	}
 
 
 	public IEnumerator AskQuestion(Question question) {
-		OnAskStart?.Invoke();
-
-		var endpoint = $"{remote}/question";
-		UnityWebRequest request = new UnityWebRequest(endpoint, "GET");
-		request.SetRequestHeader("Content-Type", "application/json");
-		byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(question.ToJson());
-		request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-		request.downloadHandler = new DownloadHandlerBuffer();
-		request.timeout = 500;
-
-		Debug.Log("Sending request to " + remote);
-		Debug.Log("Request payload: " + question.ToJson());
-
-		yield return request.SendWebRequest();
-
+		
+		string wsMessageType = WebSocket_MessageType.Question;
+		string message = System.Text.Encoding.UTF8.GetString(question.ToJson());
+		SendMessage(message);
+		
+		// TODO
 		if (request.result == UnityWebRequest.Result.Success) {
 			OnAskAnswer?.Invoke(request.downloadHandler.text);
 			Debug.Log("Response: " + request.downloadHandler.text);
@@ -64,6 +124,15 @@ public class AssistantAPI : MonoBehaviour {
 			Debug.LogError("Request failed: " + request.error);
 		};
 	}
+	
+#endif
+#if !ENABLE_WINMD_SUPPORT
+
+	public IEnumerator AskQuestion(Question question) {
+		throw new Exception("Not implemented");
+	}
+
+#endif
 
 	[Serializable]
 	public abstract class RestType {
@@ -106,8 +175,12 @@ public class AssistantAPI : MonoBehaviour {
 		public string answer;
 	}
 
+	private static class WebSocket_MessageType {
+		public const string Question = "question";
+		public const string Monitor = "Monitor";
+	}
 }
 
 public enum NetworkAvailability {
-	Connected, Connecting, Error
+	Connected, Connecting, Error, Closed
 }
