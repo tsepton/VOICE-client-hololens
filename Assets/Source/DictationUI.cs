@@ -1,12 +1,12 @@
-using TMPro;
 using System;
 using System.Collections;
+using System.Linq;
+using MixedReality.Toolkit;
+using MixedReality.Toolkit.Subsystems;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static AssistantAPI;
-using System.Linq;
-using MixedReality.Toolkit.Subsystems;
-using MixedReality.Toolkit;
 
 
 public class DictationUI : MonoBehaviour {
@@ -31,14 +31,14 @@ public class DictationUI : MonoBehaviour {
 	[SerializeField] private TextMeshProUGUI _answer;
 
 	private TextToSpeechSubsystem _textToSpeechSubsystem;
-	
+
 	private string DEFAULT_PLACEHOLDER = "Say `Hey Hololens!` and ask me anything!";
 
 	void OnEnable() {
 		_listeningIcon.enabled = false;
 		_loadingIcon.enabled = false;
 		_utterance.text = DEFAULT_PLACEHOLDER;
-		
+
 		_textToSpeechSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<TextToSpeechSubsystem>();
 
 		_speech.OnDictationStart += OnDictationStart_UI;
@@ -86,9 +86,9 @@ public class DictationUI : MonoBehaviour {
 	private void OnAskAnswer_UI(string jsonString) {
 		_loadingIcon.enabled = false;
 		_utterance.text = DEFAULT_PLACEHOLDER;
-		Answer json = JsonUtility.FromJson<Answer>(jsonString);
+		// Answer json = JsonUtility.FromJson<Answer>(jsonString);
 		// _answer.text = json.answer;
-		_textToSpeechSubsystem.TrySpeak(json.answer, _audioSource);
+		_textToSpeechSubsystem.TrySpeak(jsonString, _audioSource);
 	}
 
 	private void OnDictationEnd(string utterance) {

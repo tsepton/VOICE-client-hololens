@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MixedReality.Toolkit.UX;
 using TMPro;
 using UnityEngine;
@@ -12,12 +13,18 @@ public class NetworkUI : MonoBehaviour {
 
 	[SerializeField] private MRTKUGUIInputField _networkUrl;
 
-	[SerializeField] private GameObject _dictationUI;
+	[SerializeField] private PressableButton _loadPreviousCheckbox;
+
+	[SerializeField] private PressableButton _connectButton;
+
+	[SerializeField] private GameObject _dictationGUI;
+
+	[SerializeField] private GameObject _networkGUI;
 
 	[SerializeField] private GameObject _modalities;
 
 	private void Start() {
-		_dictationUI.SetActive(false);
+		_dictationGUI.SetActive(false);
 		_modalities.SetActive(false);
 
 		UpdateUiBasedOnNetworkStatus(_api.Status);
@@ -28,20 +35,34 @@ public class NetworkUI : MonoBehaviour {
 			_api.remote = address;
 		});
 
+
+		_connectButton.OnClicked.AddListener(() => {
+
+			string uuid = null;
+			if (_loadPreviousCheckbox.IsToggled) {
+				uuid = RetrieveLastConversationUuid();
+			}
+			_api.InitChat(uuid);
+
+		});
+
+	}
+
+	private string RetrieveLastConversationUuid() {
+		throw new System.Exception("Not implemented");
 	}
 
 	private void UpdateUiBasedOnNetworkStatus(NetworkAvailability status) {
+		Debug.Log(status);
 		switch (status) {
 			case NetworkAvailability.Connected:
-				gameObject.SetActive(false);
+				_networkGUI.SetActive(false);
 				_modalities.SetActive(true);
-				_dictationUI.SetActive(true);
+				_dictationGUI.SetActive(true);
 				break;
-			case NetworkAvailability.Error:
-			case NetworkAvailability.Connecting:
 			default:
-				gameObject.SetActive(true);
-				_dictationUI.SetActive(false);
+				_networkGUI.SetActive(true);
+				_dictationGUI.SetActive(false);
 				_modalities.SetActive(false);
 				_loadingIcon.enabled = _api.remote != null && _api.remote != "";
 				break;

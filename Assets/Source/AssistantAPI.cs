@@ -16,32 +16,33 @@ public class AssistantAPI : MonoBehaviour {
 
 	public event Action<NetworkAvailability> OnStatusChanged;
 
-	private NetworkAvailability status;
+	private NetworkAvailability status = NetworkAvailability.Closed;
 
 	public NetworkAvailability Status {
 		get { return status; }
-		set {
+		private set {
 			status = value;
 			OnStatusChanged?.Invoke(status);
 		}
 	}
 
-	[SerializeField] public string remote = "ws://192.168.0.176:3000";
-
-	[SerializeField] private Speech _speech;
-
-	[SerializeField] private Gaze _gaze;
-
+	[SerializeField] public string remote = "0.0.0.0:3000";
 
 #if ENABLE_WINMD_SUPPORT
 		
+	// TODO ? 
+	// Maybe a wrapper around the websocket that has the conversation state could be useful 
+	// This way, we could init multiple conversations at once with different chat history 
+	// For instance, a chat history for a room, another for the living space
+	// Think it through
 	private MessageWebSocket webSocket;
 	
 	private DataWriter messageWriter;
 	
-	async void Start() {
-		await ConnectWebSocket();
-		if (remote == null || remote == "") Debug.LogError("_remote URI was not set.");
+	public async void InitChat(string? uuid) {
+		if (remote == null || remote == "") Debug.LogError("Remote URI was not set.");
+		else if (webSocket != null) Debug.LogError("Websocket connection already established."); 
+		else await ConnectWebSocket(uuid);
 	}
 	
 	private void OnDestroy() {
@@ -49,7 +50,7 @@ public class AssistantAPI : MonoBehaviour {
 		webSocket = null;
 	}
 
-	private async Task ConnectWebSocket() {
+	private async Task ConnectWebSocket(string? uuid) {
 		try {
 			Status =  NetworkAvailability.Connecting;
 
@@ -59,13 +60,12 @@ public class AssistantAPI : MonoBehaviour {
 			webSocket.MessageReceived += WebSocket_MessageReceived;
 			webSocket.Closed += WebSocket_Closed;
 			
-			Uri serverUri = new Uri(remote);
+			string uriParams = uuid != null ? $"uuid={uuid}" : "";
+			Uri serverUri = new Uri($"ws://{remote}/chat?{uriParams}");
 			await webSocket.ConnectAsync(serverUri);
 			messageWriter = new DataWriter(webSocket.OutputStream);
 			Status =  NetworkAvailability.Connected;
 			Debug.Log("Connected to distant VOICE server.");
-			
-			await SendMessage("Hello from HoloLens 2!"); // TODO - this is to be removed
 		}
 		catch (Exception e) {
 			Status =  NetworkAvailability.Error;
@@ -90,6 +90,7 @@ public class AssistantAPI : MonoBehaviour {
 				reader.UnicodeEncoding = UnicodeEncoding.Utf8;
 				string receivedMessage = reader.ReadString(reader.UnconsumedBufferLength);
 				Debug.Log("Message received: " + receivedMessage);
+				OnAskAnswer?.Invoke(receivedMessage);
 			}
 		}
 		catch (Exception ex) {
@@ -106,7 +107,8 @@ public class AssistantAPI : MonoBehaviour {
 	public IEnumerator AskQuestion(Question question) {
 		
 		string wsMessageType = WebSocket_MessageType.Question;
-		await SendMessage(question.ToJson());
+		SendMessage(question.ToJson()); // TODO 
+		yield return null;
 		
 		// TODO
 		// if (request.result == UnityWebRequest.Result.Success) {
@@ -122,6 +124,10 @@ public class AssistantAPI : MonoBehaviour {
 #if !ENABLE_WINMD_SUPPORT
 
 	public IEnumerator AskQuestion(Question question) {
+		throw new Exception("Not implemented");
+	}
+
+	public async void InitChat(string? uuid) {
 		throw new Exception("Not implemented");
 	}
 
@@ -163,10 +169,10 @@ public class AssistantAPI : MonoBehaviour {
 	}
 
 	// This class will change - This is temporary
-	[Serializable]
-	public class Answer : RestType {
-		public string answer;
-	}
+	// [Serializable]
+	// public class Answer : RestType {
+	// 	public string answer;
+	// }
 
 	private static class WebSocket_MessageType {
 		public const string Question = "question";
