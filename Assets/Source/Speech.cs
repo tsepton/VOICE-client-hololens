@@ -65,14 +65,17 @@ public class Speech : MonoBehaviour {
 	}
 
 	public void Reset() {
-		PhraseRecognitionSystem.Shutdown();
+		try {
+			PhraseRecognitionSystem.Shutdown();
+			_dictationSubsystem.StopDictation();
+		} catch (Exception _) { }
 		PhraseRecognitionSystem.Restart();
-		_dictationSubsystem.StopDictation();
 	}
 
 	void OnApplicationFocus(bool hasFocus) {
 		if (!hasFocus) {
 			PhraseRecognitionSystem.Shutdown();
+			_dictationSubsystem.StopDictation();
 		} else {
 			PhraseRecognitionSystem.Restart();
 		}
@@ -89,4 +92,3 @@ public class Speech : MonoBehaviour {
 		public UnityEvent Action => _action;
 	}
 }
-

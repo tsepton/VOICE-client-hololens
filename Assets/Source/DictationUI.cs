@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using MixedReality.Toolkit;
 using MixedReality.Toolkit.Subsystems;
+using MixedReality.Toolkit.UX;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,9 +31,11 @@ public class DictationUI : MonoBehaviour {
 
 	[SerializeField] private TextMeshProUGUI _answer;
 
+	[SerializeField] private PressableButton _resetBtn;
+
 	private TextToSpeechSubsystem _textToSpeechSubsystem;
 
-	private string DEFAULT_PLACEHOLDER = "Say `Hey Hololens!` and ask me anything!";
+	private string DEFAULT_PLACEHOLDER = "Say \"Hey Hololens!\" and ask me anything!";
 
 	void OnEnable() {
 		_listeningIcon.enabled = false;
@@ -49,6 +52,9 @@ public class DictationUI : MonoBehaviour {
 
 		_api.OnAskStart += OnAskStart_UI;
 		_api.OnAskAnswer += OnAskAnswer_UI;
+
+		_resetBtn.OnClicked.AddListener(ResetDictation);
+		_resetBtn.gameObject.SetActive(false);
 	}
 
 	void OnDisable() {
@@ -69,6 +75,7 @@ public class DictationUI : MonoBehaviour {
 
 		_audioSource.clip = _activationSound;
 		_audioSource.Play();
+		_resetBtn.gameObject.SetActive(true);
 	}
 
 	private void OnDictationEnd_UI(string str) {
@@ -77,6 +84,7 @@ public class DictationUI : MonoBehaviour {
 
 		_listeningIcon.enabled = false;
 		_utterance.text = str;
+		_resetBtn.gameObject.SetActive(false);
 	}
 
 	private void OnAskStart_UI() {
@@ -103,4 +111,10 @@ public class DictationUI : MonoBehaviour {
 
 	}
 
+	private void ResetDictation() {
+		_speech.Reset();
+		_loadingIcon.enabled = false;
+		_utterance.text = DEFAULT_PLACEHOLDER;
+		_resetBtn.gameObject.SetActive(false);
+	}
 }
