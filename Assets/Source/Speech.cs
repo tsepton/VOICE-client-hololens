@@ -10,33 +10,15 @@ public class Speech : MonoBehaviour {
 	[SerializeField] private List<PhraseAction> _phraseActions;
 
 	private DictationSubsystem _dictationSubsystem;
-	
+
 	public bool IsDictationSystemListening => _dictationSubsystem.running;
 
-	public event Action OnDictationStart; 
-	
-	public event Action<string> OnDictationEnd; 
+	public event Action OnDictationStart;
+
+	public event Action<string> OnDictationEnd;
 
 	private void Start() {
-		
-		// Phrase Recognition System
-		var phraseRecognitionSubsystem = XRSubsystemHelpers.KeywordRecognitionSubsystem;
-		foreach (var phraseAction in _phraseActions) {
-			if (!string.IsNullOrEmpty(phraseAction.Phrase) &&
-				phraseAction.Action.GetPersistentEventCount() > 0) {
-				phraseRecognitionSubsystem.
-					CreateOrGetEventForKeyword(phraseAction.Phrase).
-						AddListener(() => phraseAction.Action.Invoke());
-			}
-		}
-
-		// Dictation System
-		_dictationSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<DictationSubsystem>();
-		if (_dictationSubsystem != null) {
-			_dictationSubsystem.Recognized += OnRecognized;
-			_dictationSubsystem.RecognitionFinished += OnRecognitionFinished;
-			_dictationSubsystem.RecognitionFaulted += OnRecognitionFinished;
-		}
+		Boot();
 	}
 
 	private void OnRecognized(DictationResultEventArgs arg) {
@@ -59,6 +41,41 @@ public class Speech : MonoBehaviour {
 		}
 		_dictationSubsystem.StartDictation();
 		OnDictationStart?.Invoke();
+	}
+
+	private void Boot() {
+		// Phrase Recognition System
+		var phraseRecognitionSubsystem = XRSubsystemHelpers.KeywordRecognitionSubsystem;
+		foreach (var phraseAction in _phraseActions) {
+			if (!string.IsNullOrEmpty(phraseAction.Phrase) &&
+				phraseAction.Action.GetPersistentEventCount() > 0) {
+				phraseRecognitionSubsystem.
+					CreateOrGetEventForKeyword(phraseAction.Phrase).
+						AddListener(() => phraseAction.Action.Invoke());
+			}
+		}
+
+		// Dictation System
+		_dictationSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<DictationSubsystem>();
+		if (_dictationSubsystem != null) {
+			_dictationSubsystem.Recognized += OnRecognized;
+			_dictationSubsystem.RecognitionFinished += OnRecognitionFinished;
+			_dictationSubsystem.RecognitionFaulted += OnRecognitionFinished;
+		}
+	}
+
+	public void Reset() {
+		PhraseRecognitionSystem.Shutdown();
+		PhraseRecognitionSystem.Restart();
+		_dictationSubsystem.StopDictation();
+	}
+
+	void OnApplicationFocus(bool hasFocus) {
+		if (!hasFocus) {
+			PhraseRecognitionSystem.Shutdown();
+		} else {
+			PhraseRecognitionSystem.Restart();
+		}
 	}
 
 	[Serializable]
