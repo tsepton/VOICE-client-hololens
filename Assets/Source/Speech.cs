@@ -67,8 +67,16 @@ public class Speech : MonoBehaviour {
 	public void Reset() {
 		try {
 			PhraseRecognitionSystem.Shutdown();
+		} catch (Exception e) {
+			Debug.LogWarning($"Failed to shut down PhraseRecognitionSystem: {e.Message}");
+		}
+
+		try {
 			_dictationSubsystem.StopDictation();
-		} catch (Exception _) { }
+		} catch (Exception e) {
+			Debug.LogWarning($"Failed to stop dictation subsystem: {e.Message}");
+		}
+
 		PhraseRecognitionSystem.Restart();
 	}
 
