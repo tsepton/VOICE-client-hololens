@@ -99,25 +99,16 @@ public class AssistantAPI : MonoBehaviour {
 	}
 
 	private void WebSocket_Closed(IWebSocket sender, WebSocketClosedEventArgs args) {
-		Debug.LogWarning($"WebSocket closed: Code={args.Code}, Reason={args.Reason}");
 		Status =  NetworkAvailability.Closed;
+		Debug.LogWarning($"WebSocket closed: Code={args.Code}, Reason={args.Reason}");
 	}
 
 
 	public IEnumerator AskQuestion(Question question) {
-		
+		OnAskStart?.Invoke();
 		string wsMessageType = WebSocket_MessageType.Question;
 		SendMessage(question.ToJson()); // TODO 
 		yield return null;
-		
-		// TODO
-		// if (request.result == UnityWebRequest.Result.Success) {
-		// 	OnAskAnswer?.Invoke(request.downloadHandler.text);
-		// 	Debug.Log("Response: " + request.downloadHandler.text);
-		// } else {
-		// 	OnAskAnswer?.Invoke("Error...");
-		// 	Debug.LogError("Request failed: " + request.error);
-		// };
 	}
 	
 #endif
