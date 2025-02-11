@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.IO;
 using MixedReality.Toolkit.UX;
 using TMPro;
 using UnityEngine;
@@ -8,8 +6,6 @@ using UnityEngine.UI;
 
 public class NetworkUI : MonoBehaviour {
 	[SerializeField] private AssistantAPI _api;
-
-	[SerializeField] private RawImage _loadingIcon;
 
 	[SerializeField] private MRTKUGUIInputField _networkUrl;
 
@@ -27,6 +23,10 @@ public class NetworkUI : MonoBehaviour {
 		_dictationGUI.SetActive(false);
 		_modalities.SetActive(false);
 
+		bool previousConvExists = RetrieveLastConversation() != null;
+		_loadPreviousCheckbox.gameObject.SetActive(previousConvExists);
+		_api.OnInfoReceived += SaveConversation;
+
 		UpdateUiBasedOnNetworkStatus(_api.Status);
 		_api.OnStatusChanged += UpdateUiBasedOnNetworkStatus;
 
@@ -35,21 +35,26 @@ public class NetworkUI : MonoBehaviour {
 			_api.remote = address;
 		});
 
-
 		_connectButton.OnClicked.AddListener(() => {
-
 			string uuid = null;
 			if (_loadPreviousCheckbox.IsToggled) {
-				uuid = RetrieveLastConversationUuid();
+				uuid = RetrieveLastConversation()?.uuid;
 			}
 			_api.InitChat(uuid);
-
 		});
-
 	}
 
-	private string RetrieveLastConversationUuid() {
-		throw new System.Exception("Not implemented");
+	private AssistantAPI.ConversationInfo? RetrieveLastConversation() {
+		// FIXME - constante
+		string fileName = "conversation_history.txt";
+		return FileHelper.Load<AssistantAPI.ConversationInfo>(fileName);
+	}
+
+	private void SaveConversation(AssistantAPI.ConversationInfo conv) {
+		// FIXME - constante
+		string fileName = "conversation_history.txt";
+
+		FileHelper.Save<AssistantAPI.ConversationInfo>(conv, fileName);
 	}
 
 	private void UpdateUiBasedOnNetworkStatus(NetworkAvailability status) {
@@ -64,8 +69,33 @@ public class NetworkUI : MonoBehaviour {
 				_networkGUI.SetActive(true);
 				_dictationGUI.SetActive(false);
 				_modalities.SetActive(false);
-				_loadingIcon.enabled = _api.remote != null && _api.remote != "";
 				break;
+		}
+	}
+
+	public static class FileHelper {
+
+		public static T? Load<T>(string fileName) {
+			string path = Path.Combine(Application.persistentDataPath, fileName);
+			if (File.Exists(path)) {
+				string json = File.ReadAllText(path);
+				return JsonUtility.FromJson<T>(json);
+			} else {
+				Debug.LogWarning($"File not found at: {path}");
+				return default;
+			}
+		}
+
+		public static void Save<T>(T obj, string fileName) {
+			string path = Path.Combine(Application.persistentDataPath, fileName);
+			string json = JsonUtility.ToJson(obj, true);
+
+			try {
+				File.WriteAllText(path, json);
+				Debug.Log($"File saved to: {path}");
+			} catch (IOException e) {
+				Debug.LogError($"Failed to save file at: {path}\n{e.Message}");
+			}
 		}
 	}
 
