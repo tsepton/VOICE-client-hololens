@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 #if ENABLE_WINMD_SUPPORT
@@ -7,12 +8,15 @@ using System.Threading.Tasks;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 #endif
+using Answer = System.String;
 
 public class AssistantAPI : MonoBehaviour {
 
 	public event Action OnAskStart;
 
-	public event Action<string> OnAskAnswer;
+	public event Action<Answer> OnAskAnswer;
+
+	public event Action<ConversationInfo> OnInfoReceived;
 
 	public event Action<NetworkAvailability> OnStatusChanged;
 
@@ -23,6 +27,7 @@ public class AssistantAPI : MonoBehaviour {
 		private set {
 			status = value;
 			OnStatusChanged?.Invoke(status);
+			Debug.Log($"Status set {status}");
 		}
 	}
 
@@ -88,9 +93,9 @@ public class AssistantAPI : MonoBehaviour {
 		try {
 			using (DataReader reader = args.GetDataReader()) {
 				reader.UnicodeEncoding = UnicodeEncoding.Utf8;
-				string receivedMessage = reader.ReadString(reader.UnconsumedBufferLength);
-				Debug.Log("Message received: " + receivedMessage);
-				OnAskAnswer?.Invoke(receivedMessage);
+				string serialized = reader.ReadString(reader.UnconsumedBufferLength);
+				Debug.Log("Message received: " + serialized);
+				HandleCallback(Deserialize(serialized));
 			}
 		}
 		catch (Exception ex) {
@@ -106,9 +111,35 @@ public class AssistantAPI : MonoBehaviour {
 
 	public IEnumerator AskQuestion(Question question) {
 		OnAskStart?.Invoke();
-		string wsMessageType = WebSocket_MessageType.Question;
 		SendMessage(question.ToJson()); // TODO 
 		yield return null;
+	}
+	
+
+	private Message Deserialize(string json) {
+		Message message = JsonUtility.FromJson<Message>(json);
+		switch (message.type) {
+			case "answer":
+				return JsonUtility.FromJson<Answer>(json);
+			case "info":
+				return JsonUtility.FromJson<ConversationInfo>(json);
+			default:
+				return message;
+		};
+	}
+
+	private void HandleCallback(Message message) {
+		switch (message){
+			case Answer answer:
+				OnAskAnswer?.Invoke(answer);
+				break;
+			case ConversationInfo info:
+				OnInfoReceived?.Invoke(info);
+				break;
+			default:
+				Debug.LogWarning("Unhandled message type.");
+				break;
+		}
 	}
 	
 #endif
@@ -124,6 +155,7 @@ public class AssistantAPI : MonoBehaviour {
 
 #endif
 
+	// UP
 	[Serializable]
 	public abstract class RestType {
 		public string ToJson() {
@@ -159,16 +191,40 @@ public class AssistantAPI : MonoBehaviour {
 		}
 	}
 
-	// This class will change - This is temporary
-	// [Serializable]
-	// public class Answer : RestType {
-	// 	public string answer;
-	// }
-
 	private static class WebSocket_MessageType {
 		public const string Question = "question";
 		public const string Monitor = "Monitor";
 	}
+
+
+	// DOWN
+	[Serializable]
+	public class Message : RestType {
+		public string type;
+	}
+
+	[Serializable]
+	public class ConversationInfo : Message {
+		public string uuid;
+
+		public static new string type = "info";
+
+		public ConversationInfo(string uuid) {
+			this.uuid = uuid;
+		}
+	}
+
+	[Serializable]
+	public class Answer : Message {
+		public string text;
+
+		public static new string type = "answer";
+
+		public Answer(string text) {
+			this.text = text;
+		}
+	}
+
 }
 
 public enum NetworkAvailability {
