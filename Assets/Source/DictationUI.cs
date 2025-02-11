@@ -38,9 +38,11 @@ public class DictationUI : MonoBehaviour {
 	private string DEFAULT_PLACEHOLDER = "Say \"Hey Hololens!\" and ask me anything!";
 
 	void OnEnable() {
-		_listeningIcon.enabled = false;
+		_resetBtn.gameObject.SetActive(false);
 		_loadingIcon.enabled = false;
+		_listeningIcon.enabled = false;
 		_utterance.text = DEFAULT_PLACEHOLDER;
+		_answer.gameObject.SetActive(false);
 
 		_textToSpeechSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<TextToSpeechSubsystem>();
 
@@ -69,9 +71,10 @@ public class DictationUI : MonoBehaviour {
 	}
 
 	private void OnDictationStart_UI() {
-		_answer.text = "";
+		// _answer.text = "";
 		_utterance.text = "";
 		_listeningIcon.enabled = true;
+		_resetBtn.gameObject.SetActive(true);
 
 		_audioSource.clip = _activationSound;
 		_audioSource.Play();
@@ -82,8 +85,8 @@ public class DictationUI : MonoBehaviour {
 		_audioSource.clip = _deactivationSound;
 		_audioSource.Play();
 
-		_listeningIcon.enabled = false;
 		_utterance.text = str;
+		_listeningIcon.enabled = false;
 		_resetBtn.gameObject.SetActive(false);
 	}
 
@@ -117,8 +120,8 @@ public class DictationUI : MonoBehaviour {
 	private void ResetDictation() {
 		_speech.Reset();
 		_loadingIcon.enabled = false;
-		_listeningIcon.enabled = false;
 		_utterance.text = DEFAULT_PLACEHOLDER;
+		_resetBtn.gameObject.SetActive(false);
 		_resetBtn.gameObject.SetActive(false);
 	}
 }

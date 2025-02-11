@@ -29,8 +29,7 @@ public class Speech : MonoBehaviour {
 	}
 
 	private void OnRecognitionFinished(DictationSessionEventArgs arg) {
-		if (PhraseRecognitionSystem.Status == SpeechSystemStatus.Stopped ||
-			PhraseRecognitionSystem.Status == SpeechSystemStatus.Failed) {
+		if (PhraseRecognitionSystem.Status != SpeechSystemStatus.Running) {
 			PhraseRecognitionSystem.Restart();
 		}
 	}
@@ -77,7 +76,10 @@ public class Speech : MonoBehaviour {
 			Debug.LogWarning($"Failed to stop dictation subsystem: {e.Message}");
 		}
 
-		PhraseRecognitionSystem.Restart();
+		if (PhraseRecognitionSystem.Status != SpeechSystemStatus.Running) {
+			PhraseRecognitionSystem.Restart();
+			Debug.Log("PhraseRecognitionSystem restarted");
+		}
 	}
 
 	void OnApplicationFocus(bool hasFocus) {
