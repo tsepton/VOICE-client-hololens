@@ -22,7 +22,6 @@ public class Speech : MonoBehaviour {
 	}
 
 	private void OnRecognized(DictationResultEventArgs arg) {
-		// TODO
 		Debug.Log($"Recognized: ''{arg.Result}'' with a confidence of {arg.Confidence}");
 		_dictationSubsystem.StopDictation();
 		OnDictationEnd?.Invoke(arg.Result);

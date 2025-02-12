@@ -1,7 +1,7 @@
-using UnityEngine;
-using System.IO;
 using System;
+using System.IO;
 using Unity.VisualScripting;
+using UnityEngine;
 
 public class FileLoggerBehavior : MonoBehaviour {
 	private void Start() {
@@ -14,7 +14,6 @@ public class FileLogger : ILogHandler {
 	private StreamWriter m_StreamWriter;
 	private ILogHandler m_DefaultLogHandler = Debug.unityLogger.logHandler;
 
-	// TODO - make this a static method
 	public FileLogger() {
 
 		string filePath = Application.persistentDataPath + $"/development_logs_{DateTime.Now.ToFileTime()}.txt";

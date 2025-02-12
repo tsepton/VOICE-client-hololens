@@ -1,10 +1,10 @@
-using UnityEngine;
-using System.Linq;
-using UnityEngine.Windows.WebCam;
-using MixedReality.Toolkit.Input;
-using System.Collections.Generic;
-using System.Collections;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using MixedReality.Toolkit.Input;
+using UnityEngine;
+using UnityEngine.Windows.WebCam;
 
 
 public class Gaze : MonoBehaviour {
@@ -56,7 +56,8 @@ public class Gaze : MonoBehaviour {
 		if (_photoCaptureObject == null) {
 			Debug.LogError("Photo mode not started");
 			return;
-		};
+		}
+		;
 		_screenshotBase64 = null;
 		_photoCaptureObject.TakePhotoAsync(OnCapturedPhoto);
 
@@ -112,7 +113,7 @@ public class Gaze : MonoBehaviour {
 		var height = _cameraParameters.cameraResolutionHeight;
 
 		while (true) {
-			float gazeDistance = 0.75f; // TODO - Calculate it using intersection
+			float gazeDistance = 2.25f; // TODO - Calculate it using intersection
 			Vector3 gazePointWorld = _gazeInteractor.rayOriginTransform.position
 				+ _gazeInteractor.rayOriginTransform.forward * gazeDistance;
 

@@ -97,11 +97,6 @@ public class DictationUI : MonoBehaviour {
 	private void OnAskAnswer_UI(Answer message) {
 		_loadingIcon.enabled = false;
 		_utterance.text = DEFAULT_PLACEHOLDER;
-		// TODO 
-		// 1. Depending on the response, we may not want to say it out loud. 
-		// 2. The backend should be modified to send typed messages instead of plain text
-		// Answer json = JsonUtility.FromJson<Answer>(jsonString);
-		// _answer.text = json.answer;
 		_textToSpeechSubsystem.TrySpeak(message.text, _audioSource);
 	}
 
