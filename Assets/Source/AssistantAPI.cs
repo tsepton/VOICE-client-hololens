@@ -158,6 +158,9 @@ public class AssistantAPI : MonoBehaviour {
 	// UP
 	[Serializable]
 	public abstract class RestType {
+
+		public readonly string? type;
+
 		public string ToJson() {
 			return JsonUtility.ToJson(this);
 		}
@@ -165,6 +168,8 @@ public class AssistantAPI : MonoBehaviour {
 
 	[Serializable]
 	public class Question : RestType {
+		public static new string type = "question";
+
 		public string query;
 		public string image;
 		public StarePoint[] gaze;
@@ -189,6 +194,13 @@ public class AssistantAPI : MonoBehaviour {
 		public static StarePoint From(Vector2 vector) {
 			return new StarePoint((int)vector.x, (int)vector.y);
 		}
+	}
+
+	[Serializable]
+	public class MonitoringData : RestType {
+		public static new string type = "monitoring";
+
+		// TODO
 	}
 
 	private static class WebSocket_MessageType {
