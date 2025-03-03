@@ -203,12 +203,6 @@ public class AssistantAPI : MonoBehaviour {
 		// TODO
 	}
 
-	private static class WebSocket_MessageType {
-		public const string Question = "question";
-		public const string Monitor = "Monitor";
-	}
-
-
 	// DOWN
 	[Serializable]
 	public class Message : RestType {
