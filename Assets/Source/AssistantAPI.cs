@@ -159,16 +159,19 @@ public class AssistantAPI : MonoBehaviour {
 	[Serializable]
 	public abstract class RestType {
 
-		public readonly string? type;
-
 		public string ToJson() {
 			return JsonUtility.ToJson(this);
 		}
 	}
 
 	[Serializable]
-	public class Question : RestType {
-		public static new string type = "question";
+	public class Message : RestType {
+		public readonly string type;
+	}
+
+	[Serializable]
+	public class Question : Message {
+		public readonly static new string type = "question";
 
 		public string query;
 		public string image;
@@ -197,23 +200,18 @@ public class AssistantAPI : MonoBehaviour {
 	}
 
 	[Serializable]
-	public class MonitoringData : RestType {
-		public static new string type = "monitoring";
+	public class MonitoringData : Message {
+		public readonly static new string type = "monitoring";
 
 		// TODO
 	}
 
-	// DOWN
-	[Serializable]
-	public class Message : RestType {
-		public string type;
-	}
 
 	[Serializable]
 	public class ConversationInfo : Message {
 		public string uuid;
 
-		public static new string type = "info";
+		public readonly static new string type = "info";
 
 		public ConversationInfo(string uuid) {
 			this.uuid = uuid;
@@ -224,7 +222,7 @@ public class AssistantAPI : MonoBehaviour {
 	public class Answer : Message {
 		public string text;
 
-		public static new string type = "answer";
+		public readonly static new string type = "answer";
 
 		public Answer(string text) {
 			this.text = text;
