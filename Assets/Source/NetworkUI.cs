@@ -58,7 +58,6 @@ public class NetworkUI : MonoBehaviour {
 	}
 
 	private void UpdateUiBasedOnNetworkStatus(NetworkAvailability status) {
-		Debug.Log(status);
 		switch (status) {
 			case NetworkAvailability.Connected:
 				_networkGUI.SetActive(false);

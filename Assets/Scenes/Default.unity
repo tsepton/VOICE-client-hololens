@@ -2155,6 +2155,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1009753808}
   - component: {fileID: 1009753809}
+  - component: {fileID: 1009753810}
   m_Layer: 0
   m_Name: API
   m_TagString: Untagged
@@ -2190,6 +2191,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   remote: 192.168.0.101:3000
+  _mainThreadDispatcher: {fileID: 1009753810}
+--- !u!114 &1009753810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009753807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f263972425c401646a1a7024f7413160, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1078940055
 GameObject:
   m_ObjectHideFlags: 0

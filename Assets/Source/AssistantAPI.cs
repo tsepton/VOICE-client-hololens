@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 #if ENABLE_WINMD_SUPPORT
@@ -27,11 +26,13 @@ public class AssistantAPI : MonoBehaviour {
 		private set {
 			status = value;
 			OnStatusChanged?.Invoke(status);
-			Debug.Log($"Status set {status}");
+			Debug.Log($"Websocket Status changed {status}");
 		}
 	}
 
 	[SerializeField] public string remote = "0.0.0.0:3000";
+
+	[SerializeField] private MainThreadDispatcher _mainThreadDispatcher;
 
 #if ENABLE_WINMD_SUPPORT
 		
@@ -67,14 +68,14 @@ public class AssistantAPI : MonoBehaviour {
 			
 			string uriParams = uuid != null ? $"uuid={uuid}" : "";
 			Uri serverUri = new Uri($"ws://{remote}/chat?{uriParams}");
-			await webSocket.ConnectAsync(serverUri);
 			messageWriter = new DataWriter(webSocket.OutputStream);
+			await webSocket.ConnectAsync(serverUri);
 			Status =  NetworkAvailability.Connected;
-			Debug.Log("Connected to distant VOICE server.");
 		}
 		catch (Exception e) {
 			Status =  NetworkAvailability.Error;
-			Debug.LogError($"WebSocket Error: {e.Message}");
+			Debug.LogError($"WebSocket Error: {e}");
+			Debug.LogError(e.Message);
 		}
 	}
 
@@ -95,7 +96,7 @@ public class AssistantAPI : MonoBehaviour {
 				reader.UnicodeEncoding = UnicodeEncoding.Utf8;
 				string serialized = reader.ReadString(reader.UnconsumedBufferLength);
 				Debug.Log("Message received: " + serialized);
-				HandleCallback(Deserialize(serialized));
+				_mainThreadDispatcher.Enqueue(() => HandleCallback(Deserialize(serialized)));
 			}
 		}
 		catch (Exception ex) {
@@ -110,8 +111,12 @@ public class AssistantAPI : MonoBehaviour {
 
 
 	public IEnumerator AskQuestion(Question question) {
+		if (Status != NetworkAvailability.Connected) {
+		    Debug.LogError("Cannot send Question to remote. Websocket connection is not established.");
+			yield return null;
+		}
 		OnAskStart?.Invoke();
-		SendMessage(question.ToJson()); // TODO 
+		SendMessage(question.ToJson()); 
 		yield return null;
 	}
 	
@@ -166,18 +171,17 @@ public class AssistantAPI : MonoBehaviour {
 
 	[Serializable]
 	public class Message : RestType {
-		public readonly string type;
+		public string type;
 	}
 
 	[Serializable]
 	public class Question : Message {
-		public readonly static new string type = "question";
-
 		public string query;
 		public string image;
 		public StarePoint[] gaze;
 
 		public Question(string query, string base64, StarePoint[] points, string mimeType = "image/jpeg") {
+			this.type = "question";
 			this.query = query;
 			this.image = $"data:{mimeType};base64,{base64}";
 			this.gaze = points;
@@ -201,7 +205,10 @@ public class AssistantAPI : MonoBehaviour {
 
 	[Serializable]
 	public class MonitoringData : Message {
-		public readonly static new string type = "monitoring";
+
+		public MonitoringData() {
+			this.type = "monitoring";
+		}
 
 		// TODO
 	}
@@ -211,9 +218,9 @@ public class AssistantAPI : MonoBehaviour {
 	public class ConversationInfo : Message {
 		public string uuid;
 
-		public readonly static new string type = "info";
 
 		public ConversationInfo(string uuid) {
+			this.type = "info";
 			this.uuid = uuid;
 		}
 	}
@@ -222,9 +229,8 @@ public class AssistantAPI : MonoBehaviour {
 	public class Answer : Message {
 		public string text;
 
-		public readonly static new string type = "answer";
-
 		public Answer(string text) {
+			this.type = "answer";
 			this.text = text;
 		}
 	}
