@@ -56,7 +56,6 @@ public class DictationUI : MonoBehaviour {
 		_api.OnAskAnswer += OnAskAnswer_UI;
 
 		_resetBtn.OnClicked.AddListener(ResetDictation);
-		_resetBtn.gameObject.SetActive(false);
 	}
 
 	void OnDisable() {
@@ -113,10 +112,16 @@ public class DictationUI : MonoBehaviour {
 	}
 
 	private void ResetDictation() {
+		// FIXME : there is a bug that someties happens 
+		// I cant reproduce it the following code does not work
+		// keeping the logs to debug it later if it happens again
+		Debug.Log("Resetting dictation 1");
 		_speech.Reset();
+		Debug.Log("Resetting dictation 2");
 		_loadingIcon.enabled = false;
+		Debug.Log("Resetting dictation 3");
 		_utterance.text = DEFAULT_PLACEHOLDER;
-		_resetBtn.gameObject.SetActive(false);
+		Debug.Log("Resetting dictation 4");
 		_resetBtn.gameObject.SetActive(false);
 	}
 }
