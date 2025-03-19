@@ -54,6 +54,10 @@ public class Speech : MonoBehaviour {
 		}
 
 		// Dictation System
+		BootDictation();
+	}
+
+	private void BootDictation() {
 		_dictationSubsystem = XRSubsystemHelpers.GetFirstRunningSubsystem<DictationSubsystem>();
 		if (_dictationSubsystem != null) {
 			_dictationSubsystem.Recognized += OnRecognized;
@@ -62,23 +66,31 @@ public class Speech : MonoBehaviour {
 		}
 	}
 
-	public void Reset() {
-		try {
+	public System.Collections.IEnumerator Restart() {
+		if (PhraseRecognitionSystem.Status == SpeechSystemStatus.Running) {
+			Debug.Log("PhraseRecognitionSystem.Shutdown");
 			PhraseRecognitionSystem.Shutdown();
-		} catch (Exception e) {
-			Debug.LogWarning($"Failed to shut down PhraseRecognitionSystem: {e.Message}");
 		}
-
-		try {
+		if (_dictationSubsystem.running) {
+			Debug.Log("_dictationSubsystem.StopDictation");
 			_dictationSubsystem.StopDictation();
-		} catch (Exception e) {
-			Debug.LogWarning($"Failed to stop dictation subsystem: {e.Message}");
+			Debug.Log(_dictationSubsystem.running); // The doc mentions that it is true only when Stop is called 
+			yield return new WaitForSeconds(1);
+			Debug.Log(_dictationSubsystem.running);
+			// TODO: Fill in a bug within the DictationSubsystem repository
+			// FIXME ! StopDictation is not stopping the dictation subsystem
+			// No error is thrown, but the dictation subsystem is still running
+			// Makes the Phrase.RecognitionSystem.Restart() fail
+			// _dictationSubsystem.StopDictation();
+			if (_dictationSubsystem.running) {
+				Debug.Log("Forcing the dictation subsystem to stop");
+				_dictationSubsystem.Destroy();
+				Debug.Log("_dictationSubsystem.Destroy success");
+				BootDictation();
+			}
 		}
-
-		if (PhraseRecognitionSystem.Status != SpeechSystemStatus.Running) {
-			PhraseRecognitionSystem.Restart();
-			Debug.Log("PhraseRecognitionSystem restarted");
-		}
+		Debug.Log("PhraseRecognitionSystem.Restart");
+		PhraseRecognitionSystem.Restart();
 	}
 
 	void OnApplicationFocus(bool hasFocus) {

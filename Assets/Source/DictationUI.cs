@@ -35,7 +35,7 @@ public class DictationUI : MonoBehaviour {
 
 	private TextToSpeechSubsystem _textToSpeechSubsystem;
 
-	private string DEFAULT_PLACEHOLDER = "Say \"Hey Hololens!\" and ask me anything!";
+	private string DEFAULT_PLACEHOLDER = "Say \"Hey VOICE!\" and ask me anything!";
 
 	void OnEnable() {
 		_resetBtn.gameObject.SetActive(false);
@@ -112,11 +112,12 @@ public class DictationUI : MonoBehaviour {
 	}
 
 	private void ResetDictation() {
-		// FIXME : there is a bug that someties happens 
-		// I cant reproduce it the following code does not work
-		// keeping the logs to debug it later if it happens again
+		StartCoroutine(ResetDictationCoroutine());
+	}
+
+	private IEnumerator ResetDictationCoroutine() {
 		Debug.Log("Resetting dictation 1");
-		_speech.Reset();
+		yield return StartCoroutine(_speech.Restart());
 		Debug.Log("Resetting dictation 2");
 		_loadingIcon.enabled = false;
 		Debug.Log("Resetting dictation 3");
