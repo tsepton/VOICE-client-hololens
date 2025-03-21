@@ -2,16 +2,17 @@
 
 > This repository is part of the [VOICE Operating In Contextual Environments (VOICE)](https://github.com/tsepton/VOICE) project.
 
-## Pre-requisites
-App was built using Unity `2022.3.51f`. 
-Open the project with Unity, and update the URL to a running [VOICE Backend](https://github.com/tsepton/VOICE-backend): 
-1. Open the `Default` scene.
-2. Under the `Voice Assistant`>`API` Gameobject, update the `Remote` field with the appropriate URL. 
-##### FIXME - this should be asked when app opens 
 
 ## Building
+> App was tested and built using Unity `2022.3.51f`. 
+
 First, build the `Default` scene for the Universal Windows Platform using the default parameters.
 Then, build a master built and deploy it to a Hololens 2 using Microsoft Visual Studio 2022 or above. 
 
 ## Using the Client
-State `Hey hololens !` and ask your question. 
+Enter the VOICE backend url and connect your client. 
+State `Hey VOICE!` and ask your question. If you need help with the assistant, try looking at your palm.
+
+## Known bug 
+The MRTK3 Dictation service occasionally crashes without any warning.
+If the hand menu remains stuck in a loading state for an unusually long time while processing your question, restart the app by closing and reopening it.
