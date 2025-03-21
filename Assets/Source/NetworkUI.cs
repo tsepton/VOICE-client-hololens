@@ -31,7 +31,7 @@ public class NetworkUI : MonoBehaviour {
 		_api.OnStatusChanged += UpdateUiBasedOnNetworkStatus;
 
 		_networkUrl.text = _api.remote;
-		_networkUrl.onEndEdit.AddListener((string address) => {
+		_networkUrl.onValueChanged.AddListener((string address) => {
 			_api.remote = address;
 		});
 
