@@ -47,7 +47,6 @@ public class AssistantAPI : MonoBehaviour {
 	
 	public async void InitChat(string? uuid) {
 		if (remote == null || remote == "") Debug.LogError("Remote URI was not set.");
-		else if (webSocket != null) Debug.LogError("Websocket connection already established."); 
 		else await ConnectWebSocket(uuid);
 	}
 	
